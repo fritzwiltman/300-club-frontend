@@ -2,8 +2,6 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { UserHitterSelection } from "@/lib/types/hitters"
-import { Button } from "@/components/ui/button"
-import { ChevronDown, ChevronRight } from "lucide-react"
 
 export const columns: ColumnDef<UserHitterSelection>[] = [
     {
@@ -36,18 +34,5 @@ export const columns: ColumnDef<UserHitterSelection>[] = [
         accessorKey: "eligibleOPS",
         header: "Eligible Batters' OPS",
         cell: ({ getValue }) => <span>{getValue<number>().toFixed(4)}</span>,
-    },
-    {
-        id: "expander",
-        header: () => null,
-        cell: ({ row }) => (
-            <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => row.toggleExpanded()}
-            >
-                {row.getIsExpanded() ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            </Button>
-        ),
     },
 ]
