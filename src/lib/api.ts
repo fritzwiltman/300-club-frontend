@@ -6,9 +6,7 @@ export async function getHitterLeaderboard() {
     if (!response.ok) {
         throw new Error("Failed to fetch data");
     }
-    console.log("HITTERS");
     const data = await response.json();
-    console.log(data);
 
     const transformedData: UserHitterSelection[] = data.map((userSelection: any) =>({
         rank: userSelection["rank"],
@@ -17,8 +15,6 @@ export async function getHitterLeaderboard() {
         alternatesAvg: Number(userSelection["alternate_average"]),
         eligibleOPS: Number(userSelection["aggregate_ops"]),
         selections: userSelection["qualified_picks"].map((selection: any) => {
-            console.log("Selection Data:", selection);  // Log the full selection object
-            console.log("Selection Average Before Transformation:", selection["average"]);
     
             return {
                 name: selection["player_name"],
