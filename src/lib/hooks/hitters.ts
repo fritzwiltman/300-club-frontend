@@ -14,8 +14,6 @@ export function useHitterLeaderboard() {
                     throw new Error("Failed to fetch data");
                 }
                 const data = await response.json();
-                console.log("HITTERS");
-                console.log(data);
 
                 const transformedData: UserHitterSelection[] = data.map((userSelection: any) =>({
                     rank: userSelection["rank"],
