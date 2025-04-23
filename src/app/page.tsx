@@ -1,8 +1,12 @@
+'use client'
+
+import { WhoAmI } from "@/components/ui/WhoAmI";
 import Link from "next/link";
 
 export default function HomePage() {
   return (
     <div className="container mx-auto p-6">
+      <WhoAmI />
       <h1 className="text-2xl font-bold">300 Club Fantasy Baseball</h1>
       <nav className="mt-4">
         <ul className="space-y-2">

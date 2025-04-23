@@ -1,0 +1,42 @@
+.tableWrapper {
+  @apply rounded-md border;
+}
+.smallHeadCell {
+  @apply w-10 text-center;
+}
+.cellCenter {
+  @apply text-center;
+}
+.cellHighlight {
+  @apply bg-yellow-100;
+}
+.expandCell {
+  @apply text-right pr-4 cursor-pointer hover:opacity-80;
+}
+.expandedContainer {
+  @apply p-4 bg-gray-100 rounded-md;
+}
+.innerTable {
+  @apply w-full border-collapse border border-gray-200 rounded-md;
+}
+.innerThead {
+  @apply bg-gray-100;
+}
+.innerThLeft {
+  @apply border border-gray-300 px-3 py-2 text-left;
+}
+.innerTdCenter {
+  @apply border border-gray-300 px-3 py-2 text-center;
+}
+.innerTr {
+  @apply odd:bg-white even:bg-gray-50;
+}
+.dialogContentCenter {
+  @apply fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2;
+}
+.overflowX {
+  @apply overflow-x-auto;
+}
+.diffRow {
+  @apply bg-red-200;
+}

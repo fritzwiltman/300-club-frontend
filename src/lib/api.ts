@@ -1,7 +1,7 @@
 import { UserHitterSelection } from './types/hitters';
 
 export async function getHitterLeaderboard() {
-    const response = await fetch("http://127.0.0.1:8000/leaderboard/batters");
+    const response = await fetch("http://127.0.0.1:8000/leaderboard/batters/");
     
     if (!response.ok) {
         throw new Error("Failed to fetch data");
@@ -15,7 +15,7 @@ export async function getHitterLeaderboard() {
         alternatesAvg: Number(userSelection["alternate_average"]),
         eligibleOPS: Number(userSelection["aggregate_ops"]),
         selections: userSelection["qualified_picks"].map((selection: any) => {
-    
+
             return {
                 name: selection["player_name"],
                 average: Number(selection["average"]),
@@ -23,6 +23,5 @@ export async function getHitterLeaderboard() {
             };
         }),
     }));
-
     return transformedData;
 }

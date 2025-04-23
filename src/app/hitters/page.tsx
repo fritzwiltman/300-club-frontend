@@ -1,15 +1,27 @@
-import { UserHitterSelection } from "@/lib/types/hitters"
+'use client'
+
+import { useHitterLeaderboard } from "@/lib/hooks/hitters";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
-import { getHitterLeaderboard } from "@/lib/api";
+import { useUser } from "@/context/UserContext";
 
+export default function HittersLeaderboard() {
+    const { hittersLeaderboardData, loading, error } = useHitterLeaderboard();
+    const { userName } = useUser();
 
-export default async function HittersLeaderboard() {
-    const hittersLeaderboardData = await getHitterLeaderboard();
+    if (loading) return <p>Loading…</p>;
+    if (error) return <p>Error: {error.message}</p>;
+
+    const yourEntry = hittersLeaderboardData.find((u) => u.name === userName)
 
     return (
         <div className="container mx-auto py-10">
-            <DataTable columns={columns} data={hittersLeaderboardData} />
+            {yourEntry && (
+                <div className="mb-4 text-lg">
+                    Your rank: <span className="font-bold">{yourEntry.rank}</span>
+                </div>
+            )}
+            <DataTable columns={columns} data={hittersLeaderboardData} highlightName={userName} />
         </div>
     );
 }

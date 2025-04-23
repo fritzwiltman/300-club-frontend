@@ -9,6 +9,6 @@ export interface UserHitterSelection {
 
 export interface Hitter {
     name: string;
-    average: number;
+    avg: number;
     ops: number;
 }
