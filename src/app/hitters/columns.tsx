@@ -6,12 +6,12 @@ import { UserHitterSelection } from "@/lib/types/hitters"
 export const columns: ColumnDef<UserHitterSelection>[] = [
     {
         accessorKey: "rank",
-        header: ({ column }) => <span className="text-center w-full block">Rank</span>,
+        header: ({ }) => <span className="text-center w-full block">Rank</span>,
         cell: ({ getValue }) => <span className="text-center">{getValue<number>()}</span>,
     },
     {
         accessorKey: "name",
-        header: ({ column }) => <span className="text-center w-full block">Member</span>,
+        header: ({ }) => <span className="text-center w-full block">Member</span>,
         cell: ({ getValue }) => <span className="font-medium text-center">{getValue<string>()}</span>,
     },
     {
