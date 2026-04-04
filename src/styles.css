@@ -1,3 +1,35 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import "tailwindcss";
+
+@theme {
+  /* 300 Club Color Palette */
+  --color-club-lime: #7CD344;
+  --color-club-sage: #a8e1a8;
+  --color-club-forest: #003300;
+  --color-club-green: #008000;
+  --color-club-burgundy: #B03232;
+  --color-club-gray: #666666;
+
+  /* Semantic colors */
+  --color-primary: #7CD344;
+  --color-primary-dark: #5fb82e;
+  --color-secondary: #a8e1a8;
+  --color-accent: #008000;
+  --color-danger: #B03232;
+  --color-text: #003300;
+  --color-text-muted: #666666;
+}
+
+/* Base styles */
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--color-club-forest);
+  background-color: #f9fafb;
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-club-lime);
+  outline-offset: 2px;
+}

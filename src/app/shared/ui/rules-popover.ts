@@ -1,0 +1,163 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  HostListener,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { Category } from '../../core/models';
+
+@Component({
+  selector: 'app-rules-popover',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'relative inline-block',
+  },
+  template: `
+    <button
+      #triggerButton
+      type="button"
+      (click)="toggle()"
+      [attr.aria-expanded]="isOpen()"
+      aria-haspopup="dialog"
+      class="inline-flex items-center justify-center w-5 h-5 rounded-full
+             text-club-gray hover:text-club-forest hover:bg-club-sage/50
+             focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
+      [attr.aria-label]="'View rules for ' + category().displayName"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    </button>
+
+    @if (isOpen()) {
+      <!-- Backdrop for mobile -->
+      <div
+        class="fixed inset-0 z-40 sm:hidden"
+        (click)="close()"
+        aria-hidden="true"
+      ></div>
+
+      <!-- Popover -->
+      <div
+        #popover
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-labelledby]="'rules-title-' + category().slug"
+        class="fixed z-50 left-4 right-4 top-1/2 -translate-y-1/2 max-w-80 mx-auto
+               sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:translate-y-0 sm:mt-2 sm:mx-0 sm:w-80
+               bg-white rounded-lg shadow-lg border border-gray-200
+               animate-in fade-in slide-in-from-top-1 duration-150"
+      >
+        <!-- Header -->
+        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+          <h3
+            [id]="'rules-title-' + category().slug"
+            class="font-semibold text-club-forest"
+          >
+            {{ category().displayName }} Rules
+          </h3>
+          <button
+            type="button"
+            (click)="close()"
+            class="text-club-gray hover:text-club-forest
+                   focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime rounded"
+            aria-label="Close"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Content -->
+        <div class="px-4 py-3 space-y-3">
+          <!-- Rules -->
+          <div>
+            <p class="text-sm text-club-forest leading-relaxed">
+              {{ category().rules }}
+            </p>
+          </div>
+
+          <!-- Min PA if applicable -->
+          @if (category().minPlateAppearances) {
+            <div class="flex items-center gap-2 text-sm text-club-gray">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Minimum {{ category().minPlateAppearances }} plate appearances required</span>
+            </div>
+          }
+
+          <!-- Tiebreakers -->
+          <div>
+            <h4 class="text-xs font-semibold text-club-gray uppercase tracking-wide mb-1">
+              Tiebreakers
+            </h4>
+            <ol class="list-decimal list-inside text-sm text-club-forest space-y-0.5">
+              @for (tb of category().tiebreakers; track tb; let i = $index) {
+                <li>{{ tb }}</li>
+              }
+            </ol>
+          </div>
+        </div>
+      </div>
+    }
+  `,
+  styles: [`
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slide-in-from-top-1 {
+      from { transform: translateY(-4px); }
+      to { transform: translateY(0); }
+    }
+    .animate-in {
+      animation: fade-in 150ms ease-out, slide-in-from-top-1 150ms ease-out;
+    }
+  `],
+})
+export class RulesPopoverComponent {
+  readonly category = input.required<Category>();
+
+  protected readonly isOpen = signal(false);
+
+  private readonly triggerButton = viewChild<ElementRef<HTMLButtonElement>>('triggerButton');
+  private readonly popover = viewChild<ElementRef<HTMLDivElement>>('popover');
+  private readonly elementRef = inject(ElementRef);
+
+  protected toggle(): void {
+    this.isOpen.update((open) => !open);
+  }
+
+  protected close(): void {
+    this.isOpen.set(false);
+    // Return focus to trigger button
+    this.triggerButton()?.nativeElement.focus();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.isOpen()) {
+      this.close();
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: MouseEvent): void {
+    if (!this.isOpen()) return;
+
+    const target = event.target as HTMLElement;
+    const hostElement = this.elementRef.nativeElement as HTMLElement;
+
+    if (!hostElement.contains(target)) {
+      this.close();
+    }
+  }
+}

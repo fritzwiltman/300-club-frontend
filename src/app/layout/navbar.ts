@@ -1,0 +1,66 @@
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { NgOptimizedImage } from '@angular/common';
+import { SideDrawerComponent } from '../shared/ui';
+
+@Component({
+  selector: 'app-navbar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterLink, NgOptimizedImage, SideDrawerComponent],
+  host: {
+    class: 'block',
+  },
+  template: `
+    <header role="banner" class="relative">
+      <!-- Classic Header Image -->
+      <a
+        routerLink="/"
+        class="block focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
+        aria-label="The Three Hundred Club - Home"
+      >
+        <img
+          ngSrc="header-logo.jpg"
+          alt="The Three Hundred Club"
+          width="770"
+          height="70"
+          priority
+          class="w-full h-auto max-h-20 object-cover"
+        />
+      </a>
+
+      <!-- Menu Button (positioned over the header image) -->
+      <button
+        type="button"
+        (click)="openDrawer()"
+        class="absolute top-1/2 right-2 -translate-y-1/2
+               flex items-center justify-center w-10 h-10 rounded-md
+               bg-club-forest/90 text-white shadow-md
+               hover:bg-club-forest focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime
+               transition-colors"
+        aria-label="Open menu"
+        [attr.aria-expanded]="isDrawerOpen()"
+        aria-haspopup="dialog"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </header>
+
+    <!-- Side Drawer -->
+    @if (isDrawerOpen()) {
+      <app-side-drawer (close)="closeDrawer()" />
+    }
+  `,
+})
+export class NavbarComponent {
+  protected readonly isDrawerOpen = signal(false);
+
+  protected openDrawer(): void {
+    this.isDrawerOpen.set(true);
+  }
+
+  protected closeDrawer(): void {
+    this.isDrawerOpen.set(false);
+  }
+}

@@ -1,11 +1,33 @@
 import { Routes } from '@angular/router';
-import { BattersLeaderboardComponent } from './features/batters/batters-leaderboard/batters-leaderboard';
 
 export const routes: Routes = [
   {
-    path: 'leaderboard/batters',
-    component: BattersLeaderboardComponent,
+    path: '',
+    loadComponent: () => import('./layout/layout').then((m) => m.LayoutComponent),
+    children: [
+      {
+        path: '',
+        loadChildren: () => import('./features/home/home.routes').then((m) => m.HOME_ROUTES),
+      },
+      {
+        path: 'leaderboard',
+        loadChildren: () =>
+          import('./features/leaderboard/leaderboard.routes').then((m) => m.LEADERBOARD_ROUTES),
+      },
+      {
+        path: 'user',
+        loadChildren: () =>
+          import('./features/user-profile/user-profile.routes').then((m) => m.USER_PROFILE_ROUTES),
+      },
+      {
+        path: 'users',
+        loadChildren: () =>
+          import('./features/users/users.routes').then((m) => m.USERS_ROUTES),
+      },
+    ],
   },
-  // you can keep/add a default route too:
-  // { path: '', redirectTo: 'leaderboard/batters', pathMatch: 'full' },
+  {
+    path: '**',
+    redirectTo: '',
+  },
 ];
