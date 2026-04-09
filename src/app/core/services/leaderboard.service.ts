@@ -15,6 +15,8 @@ import {
   RawStolenBasesResponse,
   RawDimaggioResponse,
   formatDisplayName,
+  MlbLeader,
+  RawMlbLeadersResponse,
 } from '../models';
 
 const SEASON_STORAGE_KEY = '300club_season';
@@ -328,10 +330,35 @@ export class LeaderboardService {
     );
   }
 
-  private buildUrl(path: string, season?: number): string {
-    if (season) {
-      return `${path}?season=${season}`;
+  /**
+   * Get top 20 MLB players for a category
+   * Note: DiMaggio category does not have MLB leaders
+   */
+  getMlbLeaders(category: CategorySlug, season?: number): Observable<MlbLeader[]> {
+    // DiMaggio doesn't have a standard MLB leaderboard
+    if (category === 'dimaggio') {
+      return of([]);
     }
-    return path;
+
+    const url = this.buildUrl(`/leaderboard/${category}/mlb-leaders/`, season);
+    return this.http.get<RawMlbLeadersResponse>(url).pipe(
+      map((response) =>
+        response.leaders.map((leader) => ({
+          rank: leader.rank,
+          playerName: leader.player_name,
+          team: leader.team,
+          value: leader.value,
+          headshotUrl: leader.headshot_url,
+        }))
+      )
+    );
+  }
+
+  private buildUrl(path: string, season?: number): string {
+    const apiPath = path.startsWith('/') ? `/api${path}` : `/api/${path}`;
+    if (season) {
+      return `${apiPath}?season=${season}`;
+    }
+    return apiPath;
   }
 }

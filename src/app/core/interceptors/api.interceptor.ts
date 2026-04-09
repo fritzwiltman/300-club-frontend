@@ -2,7 +2,7 @@ import { HttpInterceptorFn } from '@angular/common/http';
 
 /**
  * API interceptor for handling requests to the backend.
- * In development, requests to /leaderboard/* are proxied via proxy.conf.json.
+ * In development, requests to /api/* are proxied via proxy.conf.json.
  * In production, configure the API_BASE_URL environment variable.
  */
 export const apiInterceptor: HttpInterceptorFn = (req, next) => {

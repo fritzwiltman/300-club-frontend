@@ -80,7 +80,7 @@ export class UserService {
     this._isLoading.set(true);
     this._error.set(null);
 
-    return this.http.get<RawUser[]>('/leaderboard/users/').pipe(
+    return this.http.get<RawUser[]>('/api/leaderboard/users/').pipe(
       map((rawUsers) => rawUsers.map(mapRawUser)),
       tap({
         next: (users) => {

@@ -2,8 +2,11 @@
 
 @import "tailwindcss";
 
+/* Use class-based dark mode (driven by ThemeService adding `.dark` to <html>) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  /* 300 Club Color Palette */
+  /* 300 Club Color Palette - Light Mode */
   --color-club-lime: #7CD344;
   --color-club-sage: #a8e1a8;
   --color-club-forest: #003300;
@@ -19,17 +22,48 @@
   --color-danger: #B03232;
   --color-text: #003300;
   --color-text-muted: #666666;
+
+  /* Surface colors for cards/backgrounds */
+  --color-surface: #ffffff;
+  --color-surface-secondary: #f9fafb;
+  --color-border: #e5e7eb;
 }
 
 /* Base styles */
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: var(--color-club-forest);
-  background-color: #f9fafb;
+  color: var(--color-text);
+  background-color: var(--color-surface-secondary);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Focus styles for accessibility */
 :focus-visible {
   outline: 2px solid var(--color-club-lime);
   outline-offset: 2px;
+}
+
+/* Dark mode overrides */
+.dark {
+  --color-club-sage: #1a3d1a;
+  --color-club-forest: #e8f5e8;
+  --color-club-green: #4ade80;
+  --color-club-burgundy: #ef4444;
+  --color-club-gray: #9ca3af;
+
+  --color-secondary: #1a3d1a;
+  --color-accent: #4ade80;
+  --color-danger: #ef4444;
+  --color-text: #e8f5e8;
+  --color-text-muted: #9ca3af;
+
+  --color-surface: #1f2937;
+  --color-surface-secondary: #111827;
+  --color-border: #374151;
+}
+
+/* Dark mode specific styles */
+.dark body {
+  color: var(--color-text);
+  background-color: var(--color-surface-secondary);
 }
