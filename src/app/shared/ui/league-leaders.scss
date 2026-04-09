@@ -1,0 +1,14 @@
+    .scrollbar-thin {
+      scrollbar-width: thin;
+      scrollbar-color: var(--color-club-sage) transparent;
+    }
+    .scrollbar-thin::-webkit-scrollbar {
+      height: 6px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background-color: var(--color-club-sage);
+      border-radius: 3px;
+    }

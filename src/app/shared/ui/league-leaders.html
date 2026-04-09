@@ -1,0 +1,76 @@
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4 mb-4">
+      <h3 class="text-sm font-semibold text-club-forest mb-3">MLB Leaders</h3>
+
+      <div
+        class="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-thin"
+        role="list"
+        aria-label="MLB league leaders"
+      >
+        @for (leader of leaders(); track leader.rank) {
+          <div
+            class="flex-shrink-0 w-20 snap-start"
+            role="listitem"
+          >
+            <div
+              class="flex flex-col items-center p-2 rounded-lg bg-gray-50 dark:bg-gray-700 border transition-colors"
+              [class.border-club-lime]="isUserPick(leader.playerName)"
+              [class.border-gray-100]="!isUserPick(leader.playerName)"
+              [class.dark:border-gray-600]="!isUserPick(leader.playerName)"
+              [class.bg-club-sage]="isUserPick(leader.playerName)"
+              [class.bg-opacity-20]="isUserPick(leader.playerName)"
+            >
+              <!-- Headshot -->
+              <div class="relative w-12 h-12 mb-1.5">
+                @if (leader.headshotUrl) {
+                  <img
+                    [src]="leader.headshotUrl"
+                    [alt]="leader.playerName"
+                    class="w-12 h-12 rounded-full object-cover bg-gray-200"
+                    loading="lazy"
+                  />
+                } @else {
+                  <div
+                    class="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-sm font-medium text-club-gray"
+                    [attr.aria-label]="leader.playerName"
+                  >
+                    {{ getInitials(leader.playerName) }}
+                  </div>
+                }
+
+                <!-- User pick badge -->
+                @if (isUserPick(leader.playerName)) {
+                  <div
+                    class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-club-lime rounded-full flex items-center justify-center"
+                    aria-label="Your pick"
+                  >
+                    <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                }
+              </div>
+
+              <!-- Team -->
+              <span class="text-[10px] text-club-gray font-medium uppercase tracking-wide">
+                {{ leader.team }}
+              </span>
+
+              <!-- Name (truncated) -->
+              <span
+                class="text-xs font-medium text-club-forest text-center leading-tight truncate w-full"
+                [title]="leader.playerName"
+              >
+                {{ formatShortName(leader.playerName) }}
+              </span>
+
+              <!-- Stat value -->
+              <span class="text-sm font-bold text-club-forest mt-0.5 font-mono">
+                {{ formatValue(leader.value) }}
+              </span>
+            </div>
+          </div>
+        } @empty {
+          <p class="text-sm text-club-gray py-4">No leaders data available</p>
+        }
+      </div>
+    </div>

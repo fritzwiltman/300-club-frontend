@@ -1,0 +1,11 @@
+    <div class="flex flex-col items-center gap-3">
+      <div
+        class="w-10 h-10 border-4 border-club-sage border-t-club-lime rounded-full animate-spin"
+        role="status"
+        aria-label="Loading"
+      ></div>
+      @if (message()) {
+        <p class="text-sm text-club-gray">{{ message() }}</p>
+      }
+      <span class="sr-only">Loading, please wait...</span>
+    </div>
