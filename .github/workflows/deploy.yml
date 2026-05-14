@@ -1,0 +1,126 @@
+# -----------------------------------------------------------------------
+# Frontend deployment workflow
+#
+# Triggers: push to main branch, or manual dispatch (workflow_dispatch).
+#
+# What it does:
+#   1. Installs Node.js dependencies
+#   2. Builds the Angular app in production mode
+#      - Output path: dist/300-club-frontend/browser  (static files)
+#      - Hashed filenames for cache busting
+#      - Service worker enabled
+#   3. Copies the browser/ directory to the Lightsail server via rsync
+#   4. Reloads nginx so it picks up any updated file paths
+#
+# Frontend deployment strategy: STATIC ASSETS served by nginx on the
+# same Lightsail instance as the backend. Reasons:
+#   - Simplest for a small low-traffic app
+#   - No extra CDN/S3 cost or complexity
+#   - Single box to manage
+#   - Angular SSR (server.mjs) is not deployed — we use static prerendered
+#     output + client-side routing fallback in nginx
+#
+# Required GitHub repository secrets (Settings → Secrets → Actions):
+#   LIGHTSAIL_HOST      - Public IP or hostname of the Lightsail instance
+#   LIGHTSAIL_USER      - SSH username (usually 'ubuntu' or 'ec2-user')
+#   LIGHTSAIL_SSH_KEY   - Private SSH key (full PEM content, including headers)
+#
+# Server-side prerequisites (set up once manually — see DEPLOYMENT.md):
+#   - nginx installed and configured (deploy/nginx/nginx.conf)
+#   - /opt/leaderboard/frontend/ directory exists
+#   - nginx configured to serve /opt/leaderboard/frontend/
+# -----------------------------------------------------------------------
+
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy to Lightsail
+    runs-on: ubuntu-latest
+
+    steps:
+      # ------------------------------------------------------------------
+      # 1. Check out the repository
+      # ------------------------------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ------------------------------------------------------------------
+      # 2. Set up Node.js
+      # ------------------------------------------------------------------
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # ------------------------------------------------------------------
+      # 3. Install dependencies
+      # ------------------------------------------------------------------
+      - name: Install dependencies
+        run: npm ci
+
+      # ------------------------------------------------------------------
+      # 4. Build the Angular app (production)
+      #
+      # ng build --configuration production outputs to:
+      #   dist/300-club-frontend/browser/   ← static files served by nginx
+      #   dist/300-club-frontend/server/    ← SSR (not deployed)
+      #
+      # We only deploy the browser/ directory.
+      # ------------------------------------------------------------------
+      - name: Build Angular app (production)
+        run: npx ng build --configuration production
+
+      # ------------------------------------------------------------------
+      # 5. Set up SSH key for deployment
+      # ------------------------------------------------------------------
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.LIGHTSAIL_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.LIGHTSAIL_HOST }}" >> ~/.ssh/known_hosts
+
+      # ------------------------------------------------------------------
+      # 6. Sync build artifacts to the server
+      #
+      # rsync flags:
+      #   -a  archive mode (preserves permissions, timestamps, etc.)
+      #   -z  compress during transfer
+      #   --delete  remove files on server that no longer exist locally
+      #             (important: old hashed assets won't accumulate)
+      #   --checksum  compare by checksum, not just timestamp
+      #
+      # We sync dist/300-club-frontend/browser/ (the compiled static files)
+      # to /opt/leaderboard/frontend/ on the server.
+      # ------------------------------------------------------------------
+      - name: Deploy static files to server
+        run: |
+          rsync -az --delete --checksum \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes" \
+            dist/300-club-frontend/browser/ \
+            "${{ secrets.LIGHTSAIL_USER }}@${{ secrets.LIGHTSAIL_HOST }}:/opt/leaderboard/frontend/"
+
+      # ------------------------------------------------------------------
+      # 7. Reload nginx so the new index.html is picked up immediately
+      #    (hashed JS/CSS don't need a reload but index.html is not cached)
+      # ------------------------------------------------------------------
+      - name: Reload nginx
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -o StrictHostKeyChecking=yes \
+              "${{ secrets.LIGHTSAIL_USER }}@${{ secrets.LIGHTSAIL_HOST }}" \
+              "sudo nginx -t && sudo systemctl reload nginx"
+
+      # ------------------------------------------------------------------
+      # 8. Clean up
+      # ------------------------------------------------------------------
+      - name: Clean up SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

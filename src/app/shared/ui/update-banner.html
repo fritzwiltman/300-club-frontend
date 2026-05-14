@@ -1,0 +1,36 @@
+@if (updateAvailable() && !dismissed()) {
+  <div class="fixed inset-x-0 bottom-0 z-50">
+    <div class="px-4 pb-4">
+      <div
+        class="flex items-center justify-between gap-3 rounded-lg border border-club-sage/50
+               bg-white/95 dark:bg-gray-900/95 backdrop-blur px-4 py-3 shadow-lg"
+        role="status"
+        aria-live="polite"
+      >
+        <span class="text-sm text-club-forest dark:text-gray-100">
+          Update available
+        </span>
+
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            (click)="refresh()"
+            class="inline-flex items-center rounded-md bg-club-lime px-3 py-1.5 text-sm font-medium text-club-forest
+                   hover:bg-club-lime/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
+          >
+            Refresh
+          </button>
+          <button
+            type="button"
+            (click)="dismiss()"
+            class="rounded-md px-2 py-1.5 text-sm text-club-gray hover:text-club-forest
+                   focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
+            aria-label="Dismiss update banner"
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/index.html",
+          "/*.css",
+          "/*.js"
+        ]
+      }
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/favicon.ico",
+          "/manifest.webmanifest",
+          "/icons/**",
+          "/**/*.(png|jpg|jpeg|svg|webp|gif|ico)",
+          "/**/*.(woff|woff2|ttf|otf)"
+        ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "api-leaderboard",
+      "urls": [
+        "/api/leaderboard/**",
+        "/leaderboard/**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 100,
+        "maxAge": "1h",
+        "timeout": "10s"
+      }
+    }
+  ]
+}
