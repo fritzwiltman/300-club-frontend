@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, startWith } from 'rxjs';
 import { CategorySlug, getCategoryBySlug, MlbLeader, User, UserStanding } from '../../core/models';
 import { LeaderboardService, UserService } from '../../core/services';
 import { LeagueLeadersComponent, LoadingSpinnerComponent, RulesPopoverComponent, UserComparisonModalComponent } from '../../shared/ui';
@@ -9,7 +10,7 @@ import { LeagueLeadersComponent, LoadingSpinnerComponent, RulesPopoverComponent,
 @Component({
   selector: 'app-leaderboard',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LeagueLeadersComponent, LoadingSpinnerComponent, RulesPopoverComponent, UserComparisonModalComponent],
+  imports: [RouterLink, ReactiveFormsModule, LeagueLeadersComponent, LoadingSpinnerComponent, RulesPopoverComponent, UserComparisonModalComponent],
   templateUrl: './leaderboard.html',
 })
 export class LeaderboardComponent {
@@ -28,6 +29,15 @@ export class LeaderboardComponent {
   protected readonly comparisonUserA = signal<User | null>(null);
   protected readonly comparisonUserB = signal<User | null>(null);
 
+  // Filter state
+  protected readonly userNameFilter = signal<string>('');
+  protected readonly selectedPlayerFilters = signal<Set<string>>(new Set());
+  protected readonly showPlayerDropdown = signal(false);
+
+  // Form controls for search inputs
+  protected readonly userSearchControl = new FormControl('', { nonNullable: true });
+  protected readonly playerSearchControl = new FormControl('', { nonNullable: true });
+
   protected readonly categorySlug = toSignal(
     this.route.paramMap.pipe(map((params) => params.get('category') as CategorySlug | null)),
     { initialValue: null }
@@ -39,7 +49,7 @@ export class LeaderboardComponent {
   });
 
   protected readonly sortedStandings = computed(() => {
-    const standings = this._standings();
+    const standings = this.filteredStandings();
     // Sort: qualified users by rank first, then disqualified at the end
     return [...standings].sort((a, b) => {
       if (a.isDisqualified && !b.isDisqualified) return 1;
@@ -58,6 +68,10 @@ export class LeaderboardComponent {
 
   protected readonly totalParticipants = computed(() => {
     return this._standings().filter((s) => !s.isDisqualified).length;
+  });
+
+  protected readonly totalStandings = computed(() => {
+    return this._standings().length;
   });
 
   /**
@@ -97,6 +111,94 @@ export class LeaderboardComponent {
     return names;
   });
 
+  /**
+   * All unique player names across all standings for the current category.
+   * Used to populate the player filter dropdown.
+   */
+  protected readonly allPlayerNames = computed(() => {
+    const standings = this._standings();
+    const cat = this.category();
+    if (!cat) return [];
+
+    const namesSet = new Set<string>();
+    standings.forEach((standing) => {
+      switch (cat.slug) {
+        case 'batters':
+        case 'ops':
+          standing.batterPicks?.forEach((p) => namesSet.add(p.playerName));
+          break;
+        case 'homeruns':
+          standing.homerunPicks?.forEach((p) => namesSet.add(p.playerName));
+          standing.alternatePicks?.forEach((p) => namesSet.add(p.playerName));
+          break;
+        case 'pitchers':
+          standing.pitcherPicks?.forEach((p) => namesSet.add(p.playerName));
+          break;
+        case 'rbi-champion':
+        case 'stolen-bases':
+          if (standing.predictedPlayer) namesSet.add(standing.predictedPlayer);
+          break;
+        // dimaggio has no player picks
+      }
+    });
+
+    return Array.from(namesSet).sort((a, b) => a.localeCompare(b));
+  });
+
+  /**
+   * Whether any filter is currently active.
+   */
+  protected readonly hasActiveFilters = computed(() => {
+    return (
+      this.userNameFilter().trim() !== '' ||
+      this.selectedPlayerFilters().size > 0
+    );
+  });
+
+  /**
+   * Player search value from the dropdown search input.
+   */
+  protected readonly playerSearchValue = toSignal(
+    this.playerSearchControl.valueChanges.pipe(startWith('')),
+    { initialValue: '' }
+  );
+
+  /**
+   * Player names filtered by the dropdown search input.
+   */
+  protected readonly filteredPlayerNames = computed(() => {
+    const allPlayers = this.allPlayerNames();
+    const search = this.playerSearchValue().toLowerCase().trim();
+    if (!search) return allPlayers;
+    return allPlayers.filter((p) => p.toLowerCase().includes(search));
+  });
+
+  /**
+   * Standings filtered by all active filters.
+   */
+  protected readonly filteredStandings = computed(() => {
+    let standings = this._standings();
+    const userNameQuery = this.userNameFilter().toLowerCase().trim();
+    const playerFilters = this.selectedPlayerFilters();
+    const cat = this.category();
+
+    // Apply user name filter
+    if (userNameQuery) {
+      standings = standings.filter((s) =>
+        s.userName.toLowerCase().includes(userNameQuery)
+      );
+    }
+
+    // Apply player selection filter (AND logic - must have all selected players)
+    if (playerFilters.size > 0) {
+      standings = standings.filter((s) =>
+        this.standingHasAllPlayers(s, playerFilters, cat?.slug)
+      );
+    }
+
+    return standings;
+  });
+
   constructor() {
     // Load leaderboard when category or season changes
     effect(() => {
@@ -105,6 +207,23 @@ export class LeaderboardComponent {
       if (slug && getCategoryBySlug(slug)) {
         this.loadLeaderboard(slug, season);
       }
+    });
+
+    // Sync user search input with signal (debounced)
+    this.userSearchControl.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe((value) => {
+        this.userNameFilter.set(value);
+      });
+
+    // Clear filters when category changes (but not on initial load)
+    let previousSlug: CategorySlug | null = null;
+    effect(() => {
+      const slug = this.categorySlug();
+      if (slug && previousSlug !== null && slug !== previousSlug) {
+        untracked(() => this.clearAllFilters());
+      }
+      previousSlug = slug;
     });
   }
 
@@ -227,5 +346,89 @@ export class LeaderboardComponent {
   protected getUserByName(userName: string): User | null {
     const users = this.userService.users();
     return users.find((u) => u.name.toLowerCase() === userName.toLowerCase()) ?? null;
+  }
+
+  // Filter action methods
+  protected togglePlayerDropdown(): void {
+    this.showPlayerDropdown.update((v) => !v);
+    if (!this.showPlayerDropdown()) {
+      this.playerSearchControl.reset();
+    }
+  }
+
+  protected togglePlayerFilter(playerName: string): void {
+    this.selectedPlayerFilters.update((set) => {
+      const newSet = new Set(set);
+      if (newSet.has(playerName)) {
+        newSet.delete(playerName);
+      } else {
+        newSet.add(playerName);
+      }
+      return newSet;
+    });
+  }
+
+  protected selectMyPlayers(): void {
+    const myPlayers = this.currentUserPickNames();
+    if (myPlayers.length > 0) {
+      this.selectedPlayerFilters.set(new Set(myPlayers));
+      this.showPlayerDropdown.set(true);
+    }
+  }
+
+  protected clearUserNameFilter(): void {
+    this.userSearchControl.reset();
+    this.userNameFilter.set('');
+  }
+
+  protected clearAllFilters(): void {
+    this.userSearchControl.reset();
+    this.playerSearchControl.reset();
+    this.userNameFilter.set('');
+    this.selectedPlayerFilters.set(new Set());
+    this.showPlayerDropdown.set(false);
+  }
+
+  /**
+   * Check if a standing has ALL of the specified players in their picks.
+   */
+  private standingHasAllPlayers(
+    standing: UserStanding,
+    players: Set<string>,
+    categorySlug: CategorySlug | undefined
+  ): boolean {
+    if (!categorySlug) return false;
+
+    const normalizedPlayers = Array.from(players).map((p) => p.toLowerCase());
+
+    // Get the user's pick names for this category
+    let userPickNames: string[] = [];
+
+    switch (categorySlug) {
+      case 'batters':
+      case 'ops':
+        userPickNames = standing.batterPicks?.map((p) => p.playerName.toLowerCase()) ?? [];
+        break;
+      case 'homeruns':
+        userPickNames = [
+          ...(standing.homerunPicks?.map((p) => p.playerName.toLowerCase()) ?? []),
+          ...(standing.alternatePicks?.map((p) => p.playerName.toLowerCase()) ?? []),
+        ];
+        break;
+      case 'pitchers':
+        userPickNames = standing.pitcherPicks?.map((p) => p.playerName.toLowerCase()) ?? [];
+        break;
+      case 'rbi-champion':
+      case 'stolen-bases':
+        userPickNames = standing.predictedPlayer ? [standing.predictedPlayer.toLowerCase()] : [];
+        break;
+      case 'dimaggio':
+        return false; // No player picks
+      default:
+        return false;
+    }
+
+    // Check that ALL selected players are in the user's picks
+    return normalizedPlayers.every((player) => userPickNames.includes(player));
   }
 }

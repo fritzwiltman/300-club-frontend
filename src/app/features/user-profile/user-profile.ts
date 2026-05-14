@@ -131,6 +131,10 @@ export class UserProfileComponent {
             totalParticipants: qualifiedCount,
             leaderName: leader?.userName ?? null,
             leaderPoints: leader?.points ?? null,
+            mlbLeaderName: null,
+            mlbLeaderValue: null,
+            mlbLeaderHeadshotUrl: null,
+            mlbLeaderTeam: null,
             standing: userStanding ?? null,
           };
         });

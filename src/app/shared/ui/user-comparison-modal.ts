@@ -336,7 +336,7 @@ export class UserComparisonModalComponent {
   }
 
   protected formatBatterAvg(value: number): string {
-    return (value * 1000).toFixed(1);
+    return (value * 1000).toFixed(0);
   }
 
   protected formatOps(value: number): string {

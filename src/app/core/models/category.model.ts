@@ -24,7 +24,7 @@ export const CATEGORIES: readonly Category[] = [
     description: 'Aggregate batting average of qualified picks',
     unit: 'AVG',
     minPlateAppearances: 502,
-    rules: 'Pick 10 batters. Your score is the aggregate batting average of all qualified picks. Alternates automatically replace any batter who fails to reach the minimum plate appearances (502 PA, pro-rated weekly).',
+    rules: 'Pick 10 batters. Your score is the aggregate batting average of all qualified picks. Alternates automatically replace any batter who fails to reach the prorated minimum plate appearances (502 PA full season).',
     tiebreakers: ['Alternates\' Average'],
   },
   {
@@ -33,7 +33,7 @@ export const CATEGORIES: readonly Category[] = [
     description: 'Aggregate OPS of picks',
     unit: 'OPS',
     minPlateAppearances: 502,
-    rules: 'Pick 10 batters. Your score is the aggregate OPS (On-base Plus Slugging) of all qualified picks. Players must reach 502 plate appearances to qualify.',
+    rules: 'Pick 10 batters. Your score is the aggregate OPS (On-base Plus Slugging) of all qualified picks. Players must reach the prorated minimum plate appearances to qualify.',
     tiebreakers: ['Alternates\' OPS'],
   },
   {

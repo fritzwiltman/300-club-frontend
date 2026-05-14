@@ -154,7 +154,7 @@
                                       {{ pick.plateAppearances }} PA
                                     </span>
                                   } @else {
-                                    <span class="font-mono text-club-gray">{{ (pick.average * 1000).toFixed(1) }}</span>
+                                    <span class="font-mono text-club-gray">{{ (pick.average * 1000).toFixed(0) }}</span>
                                   }
                                 </div>
                               </div>
@@ -187,7 +187,7 @@
                                       {{ pick.plateAppearances }} PA
                                     </span>
                                   } @else {
-                                    <span class="font-mono text-club-gray">{{ (pick.ops * 1000).toFixed(1) }}</span>
+                                    <span class="font-mono text-club-gray">{{ (pick.ops * 1000).toFixed(0) }}</span>
                                   }
                                 </div>
                               </div>
@@ -229,7 +229,7 @@
                                       [class.dark:border-red-800]="pick.isDisqualified"
                                     >
                                       <span [class.text-club-gray]="pick.isDisqualified">{{ pick.playerName }}</span>
-                                      <span class="font-mono text-club-gray">{{ (pick.average * 1000).toFixed(1) }}</span>
+                                      <span class="font-mono text-club-gray">{{ (pick.average * 1000).toFixed(0) }}</span>
                                     </div>
                                   }
                                 </div>

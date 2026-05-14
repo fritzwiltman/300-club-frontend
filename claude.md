@@ -223,7 +223,7 @@ src/app/
 ### Phase 3: User Profile & Advanced Features (COMPLETE)
 - [x] User profile page (`/user/:userId`) showing all 7 category standings
 - [x] User comparison modal (side-by-side picks)
-- [x] Season selector (2024/2025)
+- [x] Season selector (2024/2025/2026)
 - [x] Enhanced accessibility audit
 - [x] Category rules tooltip/popup (explain rules and tiebreakers for each category)
 
@@ -351,6 +351,7 @@ API requests are proxied in development to avoid CORS issues:
 ## Notes
 
 - Backend returns snake_case, frontend uses camelCase (transform in service)
-- Season defaults to 2025, future: add season selector
+- Season defaults to 2026, with season selector in side drawer (2024-2026 available)
+- Minimum plate appearances (502 full season) is prorated based on season progress
 - ~90 users total, no pagination needed
 - All data is read-only, no mutations

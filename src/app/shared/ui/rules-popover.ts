@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   ElementRef,
   HostListener,
   inject,
@@ -9,6 +10,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { Category } from '../../core/models';
+import { LeaderboardService } from '../../core/services';
 
 @Component({
   selector: 'app-rules-popover',
@@ -20,6 +22,8 @@ import { Category } from '../../core/models';
   styleUrl: './rules-popover.scss',
 })
 export class RulesPopoverComponent {
+  private readonly leaderboardService = inject(LeaderboardService);
+
   readonly category = input.required<Category>();
 
   protected readonly isOpen = signal(false);
@@ -27,6 +31,21 @@ export class RulesPopoverComponent {
   private readonly triggerButton = viewChild<ElementRef<HTMLButtonElement>>('triggerButton');
   private readonly popover = viewChild<ElementRef<HTMLDivElement>>('popover');
   private readonly elementRef = inject(ElementRef);
+
+  /**
+   * Get the prorated minimum plate appearances for the current season
+   */
+  protected readonly proratedMinPA = computed(() => {
+    if (!this.category().minPlateAppearances) return null;
+    return this.leaderboardService.getProratedMinPlateAppearances();
+  });
+
+  /**
+   * Get the full season minimum plate appearances (502)
+   */
+  protected readonly fullSeasonMinPA = computed(() => {
+    return this.category().minPlateAppearances ?? null;
+  });
 
   protected toggle(): void {
     this.isOpen.update((open) => !open);

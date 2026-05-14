@@ -1,7 +1,11 @@
-    <div class="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors">
-      <app-navbar />
-      <main class="flex-1">
-        <router-outlet />
-      </main>
-      <app-footer />
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+      <div class="min-h-screen flex flex-col w-full">
+        <app-navbar />
+        <main class="flex-1">
+          <router-outlet />
+        </main>
+        <app-footer />
+      </div>
+      <app-update-banner />
+      <app-feedback-modal />
     </div>

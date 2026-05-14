@@ -21,6 +21,15 @@
             >
               <!-- Headshot -->
               <div class="relative w-12 h-12 mb-1.5">
+                <!-- Rank badge -->
+                <div
+                  class="absolute -top-1 -left-1 w-5 h-5 bg-club-forest dark:bg-gray-900 text-white text-[10px] font-bold
+                         rounded-full flex items-center justify-center z-10 shadow-sm"
+                  [attr.aria-label]="'Rank ' + leader.rank"
+                >
+                  {{ leader.rank }}
+                </div>
+
                 @if (leader.headshotUrl) {
                   <img
                     [src]="leader.headshotUrl"

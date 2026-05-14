@@ -50,9 +50,9 @@ export class LeagueLeadersComponent {
   formatValue(value: number): string {
     const category = this.category();
 
-    // AVG and OPS: multiply by 1000 and show one decimal (0.331 → 331.0)
+    // AVG and OPS: multiply by 1000, no decimal (0.331 → 331)
     if (category === 'batters' || category === 'ops') {
-      return (value * 1000).toFixed(1);
+      return (value * 1000).toFixed(0);
     }
 
     // Counting stats (HR, Wins, RBI, SB) are integers

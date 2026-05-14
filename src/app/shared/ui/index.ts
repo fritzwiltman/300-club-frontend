@@ -5,3 +5,5 @@ export * from './rules-popover';
 export * from './user-comparison-modal';
 export * from './side-drawer';
 export * from './league-leaders';
+export * from './update-banner';
+export * from './feedback-modal';

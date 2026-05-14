@@ -59,9 +59,14 @@ export interface CategorySummary {
   readonly userRank: number | null;
   readonly userPoints: number | null;
   readonly totalParticipants: number;
-  // Leader info
+  // Leader info (contest leader among users)
   readonly leaderName: string | null;
   readonly leaderPoints: number | null;
+  // MLB leader info (actual MLB stats leader)
+  readonly mlbLeaderName: string | null;
+  readonly mlbLeaderValue: number | null;
+  readonly mlbLeaderHeadshotUrl: string | null;
+  readonly mlbLeaderTeam: string | null;
 }
 
 // Raw API response types for each category

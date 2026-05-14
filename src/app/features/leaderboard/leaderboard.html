@@ -102,79 +102,242 @@
             />
           }
 
+          <!-- Filter Section -->
+          <div class="mb-4 space-y-3">
+            <!-- Filter Controls Row -->
+            <div class="flex flex-col sm:flex-row gap-3">
+              <!-- User Name Search -->
+              <div class="flex-1 relative">
+                <label for="user-search" class="sr-only">Search users</label>
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-club-gray"
+                     fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  id="user-search"
+                  type="search"
+                  [formControl]="userSearchControl"
+                  placeholder="Search users..."
+                  autocomplete="off"
+                  class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md
+                         bg-white dark:bg-gray-800 text-club-forest dark:text-gray-100
+                         focus:outline-none focus:ring-2 focus:ring-club-lime focus:border-club-lime
+                         placeholder:text-gray-400"
+                />
+              </div>
+
+              <!-- Filter Buttons -->
+              <div class="flex gap-2">
+                <!-- Player Filter Button -->
+                @if (cat.slug !== 'dimaggio') {
+                  <button type="button" (click)="togglePlayerDropdown()"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium
+                           border rounded-md transition-colors
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
+                    [class.bg-club-sage]="selectedPlayerFilters().size > 0"
+                    [class.border-club-green]="selectedPlayerFilters().size > 0"
+                    [class.bg-white]="selectedPlayerFilters().size === 0"
+                    [class.dark:bg-gray-800]="selectedPlayerFilters().size === 0"
+                    [class.border-gray-300]="selectedPlayerFilters().size === 0"
+                    [class.dark:border-gray-600]="selectedPlayerFilters().size === 0"
+                    [attr.aria-expanded]="showPlayerDropdown()">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                    <span class="hidden sm:inline">Filter by Player</span>
+                    @if (selectedPlayerFilters().size > 0) {
+                      <span class="bg-club-forest text-white text-xs px-1.5 py-0.5 rounded-full">
+                        {{ selectedPlayerFilters().size }}
+                      </span>
+                    }
+                    <svg class="w-4 h-4 transition-transform duration-200"
+                         [class.rotate-180]="showPlayerDropdown()"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                }
+
+                <!-- My Players Button -->
+                @if (currentUserPickNames().length > 0 && cat.slug !== 'dimaggio') {
+                  <button type="button" (click)="selectMyPlayers()"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium
+                           bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600
+                           rounded-md transition-colors hover:bg-club-sage/50
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
+                    title="Select my players in the filter">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span class="hidden sm:inline">My Players</span>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Player Filter Dropdown -->
+            @if (showPlayerDropdown()) {
+              <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600
+                          rounded-lg shadow-lg p-4 max-h-64 overflow-y-auto" role="listbox"
+                   aria-label="Filter by player">
+                <input type="search" [formControl]="playerSearchControl" placeholder="Search players..."
+                  class="w-full px-3 py-2 mb-3 border border-gray-200 dark:border-gray-600 rounded-md text-sm
+                         bg-white dark:bg-gray-700 text-club-forest dark:text-gray-100
+                         focus:outline-none focus:ring-2 focus:ring-club-lime
+                         placeholder:text-gray-400" />
+                <div class="space-y-1">
+                  @for (player of filteredPlayerNames(); track player) {
+                    <label class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50
+                                  dark:hover:bg-gray-700 cursor-pointer text-club-forest dark:text-gray-100">
+                      <input type="checkbox" [checked]="selectedPlayerFilters().has(player)"
+                        (change)="togglePlayerFilter(player)"
+                        class="rounded border-gray-300 text-club-lime focus:ring-club-lime" />
+                      <span class="text-sm">{{ player }}</span>
+                    </label>
+                  }
+                  @if (filteredPlayerNames().length === 0) {
+                    <p class="text-sm text-club-gray text-center py-2">No players found</p>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Active Filter Chips -->
+            @if (hasActiveFilters()) {
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-xs text-club-gray">Active filters:</span>
+
+                @if (userNameFilter()) {
+                  <span class="inline-flex items-center gap-1 px-2 py-1 bg-club-sage/50
+                               text-club-forest text-xs rounded-full">
+                    User: "{{ userNameFilter() }}"
+                    <button type="button" (click)="clearUserNameFilter()"
+                      class="hover:text-club-burgundy focus:outline-none"
+                      aria-label="Clear user filter">
+                      <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                  </span>
+                }
+
+                @for (player of selectedPlayerFilters(); track player) {
+                  <span class="inline-flex items-center gap-1 px-2 py-1 bg-club-sage/50
+                               text-club-forest text-xs rounded-full">
+                    {{ player }}
+                    <button type="button" (click)="togglePlayerFilter(player)"
+                      class="hover:text-club-burgundy focus:outline-none"
+                      [attr.aria-label]="'Remove ' + player + ' filter'">
+                      <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                  </span>
+                }
+
+                <button type="button" (click)="clearAllFilters()"
+                  class="text-xs text-club-burgundy hover:underline ml-2 focus:outline-none focus-visible:underline">
+                  Clear all
+                </button>
+              </div>
+            }
+
+            <!-- Results count -->
+            @if (hasActiveFilters()) {
+              <p class="text-sm text-club-gray" aria-live="polite">
+                Showing {{ sortedStandings().length }} of {{ totalStandings() }} users
+              </p>
+            }
+          </div>
+
           <!-- Leaderboard Table -->
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
-            <table class="w-full min-w-[400px]">
+            <table class="w-full">
               <thead class="bg-club-forest dark:bg-gray-900 text-white">
                 <tr>
-                  <th scope="col" class="px-3 py-3 text-left text-sm font-semibold w-14">
-                    Rank
+                  <th scope="col" class="px-2 sm:px-3 py-3 text-left text-xs sm:text-sm font-semibold w-12 sm:w-14">
+                    <span class="sm:hidden">#</span>
+                    <span class="hidden sm:inline">Rank</span>
                   </th>
-                  <th scope="col" class="px-3 py-3 text-left text-sm font-semibold">
+                  <th scope="col" class="px-2 sm:px-3 py-3 text-left text-xs sm:text-sm font-semibold max-w-[120px] sm:max-w-none">
                     Name
                   </th>
-                  <th scope="col" class="px-3 py-3 text-right text-sm font-semibold">
+                  <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold">
                     {{ cat.unit }}
                   </th>
                   <!-- Tiebreaker columns based on category -->
                   @switch (cat.slug) {
                     @case ('batters') {
-                      <th scope="col" class="px-3 py-3 text-right text-sm font-semibold" title="Alternates Average (Tiebreaker)">
-                        Alt AVG
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Alternates Average (Tiebreaker)">
+                        <span class="sm:hidden">Alt</span>
+                        <span class="hidden sm:inline">Alt AVG</span>
                       </th>
                     }
                     @case ('ops') {
-                      <th scope="col" class="px-3 py-3 text-right text-sm font-semibold" title="Alternates Average (Tiebreaker)">
-                        Alt AVG
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Alternates Average (Tiebreaker)">
+                        <span class="sm:hidden">Alt</span>
+                        <span class="hidden sm:inline">Alt AVG</span>
                       </th>
                     }
                     @case ('homeruns') {
-                      <th scope="col" class="px-3 py-3 text-right text-sm font-semibold" title="4th Pick Home Runs (1st Tiebreaker)">
-                        4th HR
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="4th Pick Home Runs (1st Tiebreaker)">
+                        <span class="sm:hidden">4th</span>
+                        <span class="hidden sm:inline">4th HR</span>
                       </th>
-                      <th scope="col" class="px-3 py-3 text-right text-sm font-semibold" title="Alternates Average (2nd Tiebreaker)">
-                        Alt AVG
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Alternates Average (2nd Tiebreaker)">
+                        <span class="sm:hidden">Alt</span>
+                        <span class="hidden sm:inline">Alt AVG</span>
                       </th>
                     }
                     @case ('pitchers') {
-                      <th scope="col" class="px-3 py-3 text-right text-sm font-semibold" title="4th Pitcher Wins (1st Tiebreaker)">
-                        4th W
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="4th Pitcher Wins (1st Tiebreaker)">
+                        <span class="sm:hidden">4th</span>
+                        <span class="hidden sm:inline">4th W</span>
                       </th>
-                      <th scope="col" class="px-3 py-3 text-right text-sm font-semibold" title="Win-Loss Percentage (2nd Tiebreaker)">
+                      <th scope="col" class="hidden sm:table-cell px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Win-Loss Percentage (2nd Tiebreaker)">
                         W-L%
                       </th>
-                      <th scope="col" class="px-3 py-3 text-right text-sm font-semibold" title="ERA (3rd Tiebreaker)">
+                      <th scope="col" class="hidden sm:table-cell px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="ERA (3rd Tiebreaker)">
                         ERA
                       </th>
-                      <th scope="col" class="px-3 py-3 text-right text-sm font-semibold" title="Alternates Average (4th Tiebreaker)">
-                        Alt AVG
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Alternates Average (4th Tiebreaker)">
+                        <span class="sm:hidden">Alt</span>
+                        <span class="hidden sm:inline">Alt AVG</span>
                       </th>
                     }
                     @case ('rbi-champion') {
-                      <th scope="col" class="px-3 py-3 text-left text-sm font-semibold">
-                        Pick
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-left text-xs sm:text-sm font-semibold">
+                        <span class="sm:hidden">Pk</span>
+                        <span class="hidden sm:inline">Pick</span>
                       </th>
-                      <th scope="col" class="px-3 py-3 text-right text-sm font-semibold" title="Difference from actual">
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Difference from actual">
                         Diff
                       </th>
-                      <th scope="col" class="px-3 py-3 text-right text-sm font-semibold" title="Alternates Average (Tiebreaker)">
-                        Alt AVG
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Alternates Average (Tiebreaker)">
+                        <span class="sm:hidden">Alt</span>
+                        <span class="hidden sm:inline">Alt AVG</span>
                       </th>
                     }
                     @case ('stolen-bases') {
-                      <th scope="col" class="px-3 py-3 text-left text-sm font-semibold">
-                        Pick
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-left text-xs sm:text-sm font-semibold">
+                        <span class="sm:hidden">Pk</span>
+                        <span class="hidden sm:inline">Pick</span>
                       </th>
-                      <th scope="col" class="px-3 py-3 text-right text-sm font-semibold" title="Difference from actual">
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Difference from actual">
                         Diff
                       </th>
-                      <th scope="col" class="px-3 py-3 text-right text-sm font-semibold" title="Alternates Average (Tiebreaker)">
-                        Alt AVG
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Alternates Average (Tiebreaker)">
+                        <span class="sm:hidden">Alt</span>
+                        <span class="hidden sm:inline">Alt AVG</span>
                       </th>
                     }
                     @case ('dimaggio') {
-                      <th scope="col" class="px-3 py-3 text-right text-sm font-semibold" title="Alternates Average (Tiebreaker)">
-                        Alt AVG
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Alternates Average (Tiebreaker)">
+                        <span class="sm:hidden">Alt</span>
+                        <span class="hidden sm:inline">Alt AVG</span>
                       </th>
                     }
                   }
@@ -192,7 +355,7 @@
                     [class.dark:hover:bg-gray-700]="hasPicks(standing) && !isCurrentUser(standing)"
                     (click)="hasPicks(standing) && toggleExpand(standing.userName)"
                   >
-                    <td class="px-3 py-3 text-sm">
+                    <td class="px-2 sm:px-3 py-3 text-xs sm:text-sm">
                       <div class="flex items-center gap-1">
                         @if (hasPicks(standing)) {
                           <svg
@@ -206,7 +369,7 @@
                           </svg>
                         }
                         @if (standing.isDisqualified) {
-                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-club-burgundy text-white">
+                          <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-club-burgundy text-white">
                             DQ
                           </span>
                         } @else {
@@ -214,15 +377,15 @@
                         }
                       </div>
                     </td>
-                    <td class="px-3 py-3">
+                    <td class="px-2 sm:px-3 py-3 text-xs sm:text-sm max-w-[120px] sm:max-w-none truncate">
                       <span [class.font-semibold]="isCurrentUser(standing)">
                         {{ standing.userName }}
                       </span>
                       @if (isCurrentUser(standing)) {
-                        <span class="ml-2 text-xs text-club-green">(You)</span>
+                        <span class="ml-1 sm:ml-2 text-xs text-club-green">(You)</span>
                       }
                     </td>
-                    <td class="px-3 py-3 text-right font-mono">
+                    <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm">
                       @if (standing.points !== null) {
                         {{ formatPoints(standing.points) }}
                       } @else {
@@ -232,39 +395,39 @@
                     <!-- Tiebreaker values based on category -->
                     @switch (cat.slug) {
                       @case ('batters') {
-                        <td class="px-3 py-3 text-right font-mono text-sm text-club-gray">
+                        <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm text-club-gray">
                           {{ formatAverage(standing.alternatesAverage) }}
                         </td>
                       }
                       @case ('ops') {
-                        <td class="px-3 py-3 text-right font-mono text-sm text-club-gray">
+                        <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm text-club-gray">
                           {{ formatAverage(standing.alternatesAverage) }}
                         </td>
                       }
                       @case ('homeruns') {
-                        <td class="px-3 py-3 text-right font-mono text-sm text-club-gray">
+                        <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm text-club-gray">
                           {{ standing.fourthPickValue ?? '--' }}
                         </td>
-                        <td class="px-3 py-3 text-right font-mono text-sm text-club-gray">
+                        <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm text-club-gray">
                           {{ formatAverage(standing.alternatesAverage) }}
                         </td>
                       }
                       @case ('pitchers') {
-                        <td class="px-3 py-3 text-right font-mono text-sm text-club-gray">
+                        <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm text-club-gray">
                           {{ standing.fourthPickValue ?? '--' }}
                         </td>
-                        <td class="px-3 py-3 text-right font-mono text-sm text-club-gray">
+                        <td class="hidden sm:table-cell px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm text-club-gray">
                           {{ formatPct(standing.winLossPct) }}
                         </td>
-                        <td class="px-3 py-3 text-right font-mono text-sm text-club-gray">
+                        <td class="hidden sm:table-cell px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm text-club-gray">
                           {{ formatEra(standing.era) }}
                         </td>
-                        <td class="px-3 py-3 text-right font-mono text-sm text-club-gray">
+                        <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm text-club-gray">
                           {{ formatAverage(standing.alternatesAverage) }}
                         </td>
                       }
                       @case ('rbi-champion') {
-                        <td class="px-3 py-3 text-sm">
+                        <td class="px-2 sm:px-3 py-3 text-xs sm:text-sm">
                           @if (standing.predictedPlayer) {
                             <span [class.text-club-green]="standing.isCorrectPlayer" [class.font-medium]="standing.isCorrectPlayer">
                               {{ standing.predictedPlayer }}
@@ -273,15 +436,15 @@
                             --
                           }
                         </td>
-                        <td class="px-3 py-3 text-right font-mono text-sm text-club-gray">
+                        <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm text-club-gray">
                           {{ formatDifference(standing.actualDifference) }}
                         </td>
-                        <td class="px-3 py-3 text-right font-mono text-sm text-club-gray">
+                        <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm text-club-gray">
                           {{ formatAverage(standing.alternatesAverage) }}
                         </td>
                       }
                       @case ('stolen-bases') {
-                        <td class="px-3 py-3 text-sm">
+                        <td class="px-2 sm:px-3 py-3 text-xs sm:text-sm">
                           @if (standing.predictedPlayer) {
                             <span [class.text-club-green]="standing.isCorrectPlayer" [class.font-medium]="standing.isCorrectPlayer">
                               {{ standing.predictedPlayer }}
@@ -290,15 +453,15 @@
                             --
                           }
                         </td>
-                        <td class="px-3 py-3 text-right font-mono text-sm text-club-gray">
+                        <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm text-club-gray">
                           {{ formatDifference(standing.actualDifference) }}
                         </td>
-                        <td class="px-3 py-3 text-right font-mono text-sm text-club-gray">
+                        <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm text-club-gray">
                           {{ formatAverage(standing.alternatesAverage) }}
                         </td>
                       }
                       @case ('dimaggio') {
-                        <td class="px-3 py-3 text-right font-mono text-sm text-club-gray">
+                        <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm text-club-gray">
                           {{ formatAverage(standing.alternatesAverage) }}
                         </td>
                       }
@@ -332,7 +495,7 @@
                                           {{ pick.plateAppearances }} PA
                                         </span>
                                       } @else {
-                                        <span class="font-mono text-club-gray">{{ (pick.average * 1000).toFixed(1) }}</span>
+                                        <span class="font-mono text-club-gray">{{ (pick.average * 1000).toFixed(0) }}</span>
                                         @if (pick.plateAppearances) {
                                           <span class="text-xs text-club-gray">{{ pick.plateAppearances }} PA</span>
                                         }
@@ -363,7 +526,7 @@
                                           {{ pick.plateAppearances }} PA
                                         </span>
                                       } @else {
-                                        <span class="font-mono text-club-gray">{{ (pick.ops * 1000).toFixed(1) }}</span>
+                                        <span class="font-mono text-club-gray">{{ (pick.ops * 1000).toFixed(0) }}</span>
                                         @if (pick.plateAppearances) {
                                           <span class="text-xs text-club-gray">{{ pick.plateAppearances }} PA</span>
                                         }
@@ -405,7 +568,7 @@
                                           [class.dark:border-red-800]="pick.isDisqualified"
                                         >
                                           <span [class.text-club-gray]="pick.isDisqualified">{{ pick.playerName }}</span>
-                                          <span class="font-mono text-club-gray">{{ (pick.average * 1000).toFixed(1) }}</span>
+                                          <span class="font-mono text-club-gray">{{ (pick.average * 1000).toFixed(0) }}</span>
                                         </div>
                                       }
                                     </div>
