@@ -1,0 +1,6 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Sitemap location (optional - add when sitemap is generated)
+# Sitemap: https://300clubleaderboard.com/sitemap.xml
