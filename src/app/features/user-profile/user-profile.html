@@ -33,11 +33,11 @@
       } @else if (profileUser()) {
         <!-- Header -->
         <header class="mb-6">
-          <h1 class="text-2xl sm:text-3xl font-bold text-club-forest">
+          <h1 class="text-2xl sm:text-3xl font-bold text-club-forest dark:text-gray-100">
             {{ profileUser()!.name }}
           </h1>
           <p class="mt-1 text-club-gray">
-            {{ leaderboardService.selectedSeason() }} Season Standings
+            {{ leaderboardService.selectedSeason() }} Season Picks
           </p>
           @if (isCurrentUser()) {
             <span class="inline-flex items-center mt-2 px-2 py-0.5 rounded text-xs font-medium bg-club-lime text-club-forest">
@@ -51,7 +51,7 @@
           <div
             class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
             role="list"
-            aria-label="Category standings"
+            aria-label="Category picks"
           >
             @for (cat of categoryData(); track cat.category) {
               <div role="listitem" class="flex flex-col">
@@ -70,7 +70,7 @@
                   <!-- Category Name with chevron -->
                   <div class="flex items-center justify-between">
                     <div class="flex items-center gap-1">
-                      <h2 class="text-lg font-bold text-club-forest">
+                      <h2 class="text-lg font-bold text-club-forest dark:text-gray-100">
                         {{ cat.displayName }}
                       </h2>
                       @if (getCategory(cat.category); as fullCat) {
@@ -89,47 +89,34 @@
                     </svg>
                   </div>
 
-                  <!-- Rank Display -->
-                  <div class="mt-3 flex items-baseline gap-2">
-                    @if (cat.userRank !== null) {
-                      <span class="text-4xl font-extrabold text-club-green">
-                        #{{ cat.userRank }}
-                      </span>
-                      <span class="text-sm text-club-gray">
-                        of {{ cat.totalParticipants }}
-                      </span>
-                    } @else {
-                      <span class="text-2xl font-bold text-club-burgundy">DQ</span>
-                      <span class="text-sm text-club-gray">Disqualified</span>
-                    }
-                  </div>
-
-                  <!-- Points -->
-                  <div class="mt-2">
+                  <!-- Points/Stats -->
+                  <div class="mt-3">
                     @if (cat.userPoints !== null) {
-                      <span class="text-lg font-semibold text-club-forest">
+                      <span class="text-2xl font-bold text-club-forest dark:text-gray-100">
                         {{ formatPoints(cat.userPoints, cat.category) }}
                       </span>
                       <span class="text-sm text-club-gray ml-1">
                         {{ cat.unit }}
                       </span>
                     } @else {
-                      <span class="text-sm text-club-gray">No points</span>
+                      <span class="text-sm text-club-gray">No data</span>
                     }
                   </div>
 
-                  <!-- Alternates Average (tiebreaker) -->
-                  @if (cat.standing?.alternatesAverage !== null && cat.standing?.alternatesAverage !== undefined) {
-                    <div class="mt-2 text-sm text-club-gray">
-                      Alt AVG: <span class="font-mono">{{ formatAverage(cat.standing!.alternatesAverage) }}</span>
-                    </div>
-                  }
+                  <!-- Click hint -->
+                  <p class="mt-2 text-xs text-club-gray">
+                    @if (isExpanded(cat.category)) {
+                      Click to collapse
+                    } @else {
+                      Click to view picks
+                    }
+                  </p>
                 </button>
 
                 <!-- Expanded Picks Section -->
                 @if (isExpanded(cat.category) && cat.standing) {
                   <div class="mt-2 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-                    <h3 class="text-sm font-semibold text-club-forest mb-3">Picks</h3>
+                    <h3 class="text-sm font-semibold text-club-forest dark:text-gray-100 mb-3">Picks</h3>
                     @switch (cat.category) {
                       @case ('batters') {
                         @if (cat.standing.batterPicks?.length) {
@@ -150,7 +137,7 @@
                                     [class.border-red-200]="pick.isDisqualified"
                                     [class.dark:border-red-800]="pick.isDisqualified"
                                   >
-                                    <span [class.text-club-gray]="pick.isDisqualified">{{ pick.playerName }}</span>
+                                    <span class="dark:text-gray-100" [class.text-club-gray]="pick.isDisqualified">{{ pick.playerName }}</span>
                                     <div class="flex items-center gap-2">
                                       @if (pick.isDisqualified) {
                                         <span class="text-xs px-1.5 py-0.5 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded">
@@ -181,7 +168,7 @@
                                       [class.border-red-200]="pick.isDisqualified"
                                       [class.dark:border-red-800]="pick.isDisqualified"
                                     >
-                                      <span [class.text-club-gray]="pick.isDisqualified">{{ pick.playerName }}</span>
+                                      <span class="dark:text-gray-100" [class.text-club-gray]="pick.isDisqualified">{{ pick.playerName }}</span>
                                       <span class="font-mono text-club-gray">{{ (pick.average * 1000).toFixed(0) }}</span>
                                     </div>
                                   }
@@ -212,7 +199,7 @@
                                     [class.border-red-200]="pick.isDisqualified"
                                     [class.dark:border-red-800]="pick.isDisqualified"
                                   >
-                                    <span [class.text-club-gray]="pick.isDisqualified">{{ pick.playerName }}</span>
+                                    <span class="dark:text-gray-100" [class.text-club-gray]="pick.isDisqualified">{{ pick.playerName }}</span>
                                     <div class="flex items-center gap-2">
                                       @if (pick.isDisqualified) {
                                         <span class="text-xs px-1.5 py-0.5 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded">
@@ -243,7 +230,7 @@
                                       [class.border-red-200]="pick.isDisqualified"
                                       [class.dark:border-red-800]="pick.isDisqualified"
                                     >
-                                      <span [class.text-club-gray]="pick.isDisqualified">{{ pick.playerName }}</span>
+                                      <span class="dark:text-gray-100" [class.text-club-gray]="pick.isDisqualified">{{ pick.playerName }}</span>
                                       <span class="font-mono text-club-gray">{{ (pick.average * 1000).toFixed(0) }}</span>
                                     </div>
                                   }
@@ -260,8 +247,8 @@
                           <div class="grid gap-2 sm:grid-cols-2">
                             @for (pick of cat.standing.homerunPicks; track pick.playerName) {
                               <div class="flex justify-between items-center px-3 py-2 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 text-sm">
-                                <span>{{ pick.playerName }}</span>
-                                <span class="font-mono font-semibold">{{ pick.homeRuns }} HR</span>
+                                <span class="dark:text-gray-100">{{ pick.playerName }}</span>
+                                <span class="font-mono font-semibold text-club-gray">{{ pick.homeRuns }} HR</span>
                               </div>
                             }
                           </div>
@@ -274,7 +261,7 @@
                           <div class="grid gap-2 sm:grid-cols-2">
                             @for (pick of cat.standing.pitcherPicks; track pick.playerName) {
                               <div class="flex justify-between items-center px-3 py-2 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 text-sm">
-                                <span>{{ pick.playerName }}</span>
+                                <span class="dark:text-gray-100">{{ pick.playerName }}</span>
                                 <div class="flex gap-2 font-mono text-club-gray text-xs">
                                   <span>{{ pick.wins }}-{{ pick.losses }}</span>
                                   <span>{{ pick.era.toFixed(2) }} ERA</span>
@@ -292,18 +279,13 @@
                           @if (cat.standing.predictedPlayer) {
                             <div class="flex items-center gap-2">
                               <span class="text-sm text-club-gray">Predicted:</span>
-                              <span class="font-medium" [class.text-club-green]="cat.standing.isCorrectPlayer">
+                              <span class="font-medium dark:text-gray-100" [class.text-club-green]="cat.standing.isCorrectPlayer">
                                 {{ cat.standing.predictedPlayer }}
                               </span>
                               @if (cat.standing.isCorrectPlayer) {
                                 <span class="text-xs px-1.5 py-0.5 bg-club-lime/30 text-club-forest rounded">Correct!</span>
                               }
                             </div>
-                            @if (cat.standing.actualDifference !== null && cat.standing.actualDifference !== undefined) {
-                              <div class="text-sm text-club-gray">
-                                Difference: <span class="font-mono">{{ formatDifference(cat.standing.actualDifference) }}</span>
-                              </div>
-                            }
                           } @else {
                             <p class="text-sm text-club-gray">No prediction data available</p>
                           }
@@ -314,18 +296,13 @@
                           @if (cat.standing.predictedPlayer) {
                             <div class="flex items-center gap-2">
                               <span class="text-sm text-club-gray">Predicted:</span>
-                              <span class="font-medium" [class.text-club-green]="cat.standing.isCorrectPlayer">
+                              <span class="font-medium dark:text-gray-100" [class.text-club-green]="cat.standing.isCorrectPlayer">
                                 {{ cat.standing.predictedPlayer }}
                               </span>
                               @if (cat.standing.isCorrectPlayer) {
                                 <span class="text-xs px-1.5 py-0.5 bg-club-lime/30 text-club-forest rounded">Correct!</span>
                               }
                             </div>
-                            @if (cat.standing.actualDifference !== null && cat.standing.actualDifference !== undefined) {
-                              <div class="text-sm text-club-gray">
-                                Difference: <span class="font-mono">{{ formatDifference(cat.standing.actualDifference) }}</span>
-                              </div>
-                            }
                           } @else {
                             <p class="text-sm text-club-gray">No prediction data available</p>
                           }
@@ -333,7 +310,7 @@
                       }
                       @case ('dimaggio') {
                         <div class="text-sm text-club-gray">
-                          <p>Predicted streak: <span class="font-semibold text-club-forest">{{ cat.standing.points }} games</span></p>
+                          <p>Predicted streak: <span class="font-semibold text-club-forest dark:text-gray-100">{{ cat.standing.points }} games</span></p>
                         </div>
                       }
                     }
