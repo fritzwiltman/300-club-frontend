@@ -44,7 +44,7 @@ export interface UserStanding {
   readonly predictedPlayer?: string;
   readonly predictedValue?: number | null;
   readonly actualDifference?: number | null;
-  readonly isCorrectPlayer?: boolean;
+  readonly pickedPlayerYtdValue?: number | null; // YTD stat of user's picked player (SBs or RBIs)
   // Picks for expandable rows
   readonly batterPicks?: readonly BatterPick[];
   readonly homerunPicks?: readonly HomerunPick[];
@@ -155,12 +155,13 @@ export interface RawRbiChampionResponse {
     player_name: string;
     rbis: number;
   };
+  readonly prorated_projection?: number;
   readonly leaderboard: readonly {
     user_name: string;
     predicted_player: string;
     predicted_rbis: number | null;
-    predicted_correct_player: boolean;
-    rbi_difference: number | null;
+    picked_player_ytd_rbi: number | null;
+    deviation: number | null;
     alternates_average: number | null;
     rank: number | null;
   }[];
@@ -171,12 +172,13 @@ export interface RawStolenBasesResponse {
     player_name: string;
     stolen_bases: number;
   };
+  readonly prorated_projection?: number;
   readonly leaderboard: readonly {
     user_name: string;
     predicted_player: string;
     predicted_stolen_bases: number | null;
-    predicted_correct_player: boolean;
-    sb_difference: number | null;
+    picked_player_ytd_sb: number | null;
+    deviation: number | null;
     alternates_average: number | null;
     rank: number | null;
   }[];

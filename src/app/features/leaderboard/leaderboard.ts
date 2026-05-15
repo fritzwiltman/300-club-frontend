@@ -156,6 +156,22 @@ export class LeaderboardComponent {
   });
 
   /**
+   * Max YTD value for prediction categories (SB/RBI).
+   * Users who have this value picked the current leader.
+   */
+  protected readonly maxPickedPlayerYtdValue = computed(() => {
+    const standings = this._standings();
+    const cat = this.category();
+    if (!cat || (cat.slug !== 'rbi-champion' && cat.slug !== 'stolen-bases')) {
+      return null;
+    }
+    const values = standings
+      .map((s) => s.pickedPlayerYtdValue)
+      .filter((v): v is number => v !== null && v !== undefined);
+    return values.length > 0 ? Math.max(...values) : null;
+  });
+
+  /**
    * Player search value from the dropdown search input.
    */
   protected readonly playerSearchValue = toSignal(
@@ -289,6 +305,18 @@ export class LeaderboardComponent {
     return (value >= 0 ? '+' : '') + value;
   }
 
+  /**
+   * Check if a standing's picked player is the current leader (has highest YTD value).
+   * Used for prediction categories (RBI Champion, Stolen Bases).
+   */
+  protected pickedLeader(standing: UserStanding): boolean {
+    const maxValue = this.maxPickedPlayerYtdValue();
+    if (maxValue === null || standing.pickedPlayerYtdValue === null || standing.pickedPlayerYtdValue === undefined) {
+      return false;
+    }
+    return standing.pickedPlayerYtdValue === maxValue;
+  }
+
   protected toggleExpand(userName: string): void {
     if (this.expandedUser() === userName) {
       this.expandedUser.set(null);
@@ -324,8 +352,9 @@ export class LeaderboardComponent {
       case 'pitchers':
         return 7; // Rank, Name, Points, 4th W, W-L%, ERA, Alt AVG
       case 'rbi-champion':
+        return 7; // Rank, Name, Pick, Guessed RBIs, Deviation, YTD RBIs, Tiebreaker
       case 'stolen-bases':
-        return 6; // Rank, Name, Points, Pick, Diff, Alt AVG
+        return 7; // Rank, Name, Pick, Guessed SBs, Deviation, YTD SBs, Tiebreaker
       default:
         return 3;
     }

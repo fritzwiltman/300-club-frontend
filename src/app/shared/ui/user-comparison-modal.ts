@@ -55,6 +55,22 @@ export class UserComparisonModalComponent {
   protected readonly isLoading = signal(false);
   private readonly _standings = signal<UserStanding[]>([]);
 
+  /**
+   * Max YTD value for prediction categories (SB/RBI).
+   * Users who have this value picked the current leader.
+   */
+  protected readonly maxPickedPlayerYtdValue = computed(() => {
+    const standings = this._standings();
+    const cat = this.category();
+    if (cat.slug !== 'rbi-champion' && cat.slug !== 'stolen-bases') {
+      return null;
+    }
+    const values = standings
+      .map((s) => s.pickedPlayerYtdValue)
+      .filter((v): v is number => v !== null && v !== undefined);
+    return values.length > 0 ? Math.max(...values) : null;
+  });
+
   protected readonly selectedUserA = signal<User | null>(null);
   protected readonly selectedUserB = signal<User | null>(null);
 
@@ -346,6 +362,18 @@ export class UserComparisonModalComponent {
   protected formatDifference(value: number | null | undefined): string {
     if (value === null || value === undefined) return '--';
     return (value >= 0 ? '+' : '') + value;
+  }
+
+  /**
+   * Check if a standing's picked player is the current leader (has highest YTD value).
+   * Used for prediction categories (RBI Champion, Stolen Bases).
+   */
+  protected pickedLeader(standing: UserStanding | null): boolean {
+    const maxValue = this.maxPickedPlayerYtdValue();
+    if (maxValue === null || !standing || standing.pickedPlayerYtdValue === null || standing.pickedPlayerYtdValue === undefined) {
+      return false;
+    }
+    return standing.pickedPlayerYtdValue === maxValue;
   }
 
   @HostListener('document:keydown.escape')

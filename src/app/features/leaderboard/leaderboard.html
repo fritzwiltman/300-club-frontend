@@ -265,9 +265,11 @@
                   <th scope="col" class="px-2 sm:px-3 py-3 text-left text-xs sm:text-sm font-semibold max-w-[120px] sm:max-w-none">
                     Name
                   </th>
-                  <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold">
-                    {{ cat.unit }}
-                  </th>
+                  @if (cat.slug !== 'stolen-bases' && cat.slug !== 'rbi-champion') {
+                    <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold">
+                      {{ cat.unit }}
+                    </th>
+                  }
                   <!-- Tiebreaker columns based on category -->
                   @switch (cat.slug) {
                     @case ('batters') {
@@ -310,28 +312,44 @@
                     }
                     @case ('rbi-champion') {
                       <th scope="col" class="px-2 sm:px-3 py-3 text-left text-xs sm:text-sm font-semibold">
-                        <span class="sm:hidden">Pk</span>
-                        <span class="hidden sm:inline">Pick</span>
+                        Pick
                       </th>
-                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Difference from actual">
-                        Diff
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Guessed RBIs">
+                        <span class="sm:hidden">Guess</span>
+                        <span class="hidden sm:inline">Guessed RBIs</span>
+                      </th>
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Deviation of Pro-rated Guess from YTD RBIs">
+                        <span class="sm:hidden">Dev</span>
+                        <span class="hidden sm:inline">Deviation</span>
+                      </th>
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Year-to-date RBIs for picked player">
+                        <span class="sm:hidden">YTD</span>
+                        <span class="hidden sm:inline">YTD RBIs</span>
                       </th>
                       <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Alternates Average (Tiebreaker)">
-                        <span class="sm:hidden">Alt</span>
-                        <span class="hidden sm:inline">Alt AVG</span>
+                        <span class="sm:hidden">TB</span>
+                        <span class="hidden sm:inline">Tiebreaker</span>
                       </th>
                     }
                     @case ('stolen-bases') {
                       <th scope="col" class="px-2 sm:px-3 py-3 text-left text-xs sm:text-sm font-semibold">
-                        <span class="sm:hidden">Pk</span>
-                        <span class="hidden sm:inline">Pick</span>
+                        Pick
                       </th>
-                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Difference from actual">
-                        Diff
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Guessed Stolen Bases">
+                        <span class="sm:hidden">Guess</span>
+                        <span class="hidden sm:inline">Guessed SBs</span>
+                      </th>
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Deviation of Pro-rated Guess from YTD SBs">
+                        <span class="sm:hidden">Dev</span>
+                        <span class="hidden sm:inline">Deviation</span>
+                      </th>
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Year-to-date Stolen Bases for picked player">
+                        <span class="sm:hidden">YTD</span>
+                        <span class="hidden sm:inline">YTD SBs</span>
                       </th>
                       <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Alternates Average (Tiebreaker)">
-                        <span class="sm:hidden">Alt</span>
-                        <span class="hidden sm:inline">Alt AVG</span>
+                        <span class="sm:hidden">TB</span>
+                        <span class="hidden sm:inline">Tiebreaker</span>
                       </th>
                     }
                     @case ('dimaggio') {
@@ -385,13 +403,15 @@
                         <span class="ml-1 sm:ml-2 text-xs text-club-green">(You)</span>
                       }
                     </td>
-                    <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm">
-                      @if (standing.points !== null) {
-                        {{ formatPoints(standing.points) }}
-                      } @else {
-                        --
-                      }
-                    </td>
+                    @if (cat.slug !== 'stolen-bases' && cat.slug !== 'rbi-champion') {
+                      <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm">
+                        @if (standing.points !== null) {
+                          {{ formatPoints(standing.points) }}
+                        } @else {
+                          --
+                        }
+                      </td>
+                    }
                     <!-- Tiebreaker values based on category -->
                     @switch (cat.slug) {
                       @case ('batters') {
@@ -427,35 +447,77 @@
                         </td>
                       }
                       @case ('rbi-champion') {
+                        <!-- Pick -->
                         <td class="px-2 sm:px-3 py-3 text-xs sm:text-sm">
                           @if (standing.predictedPlayer) {
-                            <span [class.text-club-green]="standing.isCorrectPlayer" [class.font-medium]="standing.isCorrectPlayer">
+                            <span [class.text-club-green]="pickedLeader(standing)" [class.font-medium]="pickedLeader(standing)">
                               {{ standing.predictedPlayer }}
                             </span>
                           } @else {
                             --
                           }
                         </td>
+                        <!-- Guessed RBIs -->
+                        <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm">
+                          @if (standing.predictedValue !== null && standing.predictedValue !== undefined) {
+                            {{ standing.predictedValue }}
+                          } @else {
+                            --
+                          }
+                        </td>
+                        <!-- Deviation -->
                         <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm text-club-gray">
                           {{ formatDifference(standing.actualDifference) }}
                         </td>
+                        <!-- YTD RBIs -->
+                        <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm">
+                          @if (standing.pickedPlayerYtdValue !== null && standing.pickedPlayerYtdValue !== undefined) {
+                            <span [class.text-club-green]="pickedLeader(standing)" [class.font-medium]="pickedLeader(standing)">
+                              {{ standing.pickedPlayerYtdValue }}
+                            </span>
+                          } @else {
+                            --
+                          }
+                        </td>
+                        <!-- Tiebreaker (Alt AVG) -->
                         <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm text-club-gray">
                           {{ formatAverage(standing.alternatesAverage) }}
                         </td>
                       }
                       @case ('stolen-bases') {
+                        <!-- Pick -->
                         <td class="px-2 sm:px-3 py-3 text-xs sm:text-sm">
                           @if (standing.predictedPlayer) {
-                            <span [class.text-club-green]="standing.isCorrectPlayer" [class.font-medium]="standing.isCorrectPlayer">
+                            <span [class.text-club-green]="pickedLeader(standing)" [class.font-medium]="pickedLeader(standing)">
                               {{ standing.predictedPlayer }}
                             </span>
                           } @else {
                             --
                           }
                         </td>
+                        <!-- Guessed SBs -->
+                        <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm">
+                          @if (standing.predictedValue !== null && standing.predictedValue !== undefined) {
+                            {{ standing.predictedValue }}
+                          } @else {
+                            --
+                          }
+                        </td>
+                        <!-- Deviation -->
                         <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm text-club-gray">
                           {{ formatDifference(standing.actualDifference) }}
                         </td>
+                        <!-- YTD SBs -->
+                        <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm">
+                          @if (standing.pickedPlayerYtdValue !== null && standing.pickedPlayerYtdValue !== undefined) {
+                            <span [class.text-club-green]="pickedLeader(standing)" [class.font-medium]="pickedLeader(standing)">
+                              {{ standing.pickedPlayerYtdValue }}
+                            </span>
+                          } @else {
+                            --
+                          }
+                        </td>
+                        <!-- Tiebreaker (Alt AVG) -->
                         <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm text-club-gray">
                           {{ formatAverage(standing.alternatesAverage) }}
                         </td>

@@ -254,11 +254,11 @@
                           @if (cat.standing?.predictedPlayer) {
                             <div class="flex items-center gap-2">
                               <span class="text-sm text-club-gray">Predicted:</span>
-                              <span class="font-medium dark:text-gray-100" [class.text-club-green]="cat.standing!.isCorrectPlayer">
+                              <span class="font-medium dark:text-gray-100" [class.text-club-green]="pickedLeader(cat.standing, cat.slug)">
                                 {{ cat.standing!.predictedPlayer }}
                               </span>
-                              @if (cat.standing!.isCorrectPlayer) {
-                                <span class="text-xs px-1.5 py-0.5 bg-club-lime/30 text-club-forest rounded">Correct!</span>
+                              @if (pickedLeader(cat.standing, cat.slug)) {
+                                <span class="text-xs px-1.5 py-0.5 bg-club-lime/30 text-club-forest rounded">Leader!</span>
                               }
                             </div>
                           } @else {
@@ -271,11 +271,11 @@
                           @if (cat.standing?.predictedPlayer) {
                             <div class="flex items-center gap-2">
                               <span class="text-sm text-club-gray">Predicted:</span>
-                              <span class="font-medium dark:text-gray-100" [class.text-club-green]="cat.standing!.isCorrectPlayer">
+                              <span class="font-medium dark:text-gray-100" [class.text-club-green]="pickedLeader(cat.standing, cat.slug)">
                                 {{ cat.standing!.predictedPlayer }}
                               </span>
-                              @if (cat.standing!.isCorrectPlayer) {
-                                <span class="text-xs px-1.5 py-0.5 bg-club-lime/30 text-club-forest rounded">Correct!</span>
+                              @if (pickedLeader(cat.standing, cat.slug)) {
+                                <span class="text-xs px-1.5 py-0.5 bg-club-lime/30 text-club-forest rounded">Leader!</span>
                               }
                             </div>
                           } @else {
