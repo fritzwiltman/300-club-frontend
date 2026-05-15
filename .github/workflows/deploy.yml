@@ -42,6 +42,7 @@ jobs:
   build-and-deploy:
     name: Build and Deploy to Lightsail
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       # ------------------------------------------------------------------
