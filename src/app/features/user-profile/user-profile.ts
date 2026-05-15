@@ -163,7 +163,8 @@ export class UserProfileComponent {
 
   protected formatPoints(points: number, category: CategorySlug): string {
     if (category === 'batters' || category === 'ops') {
-      return points.toFixed(3);
+      // AVG and OPS: multiply by 1000 and show 1 decimal (e.g., 299.9)
+      return (points * 1000).toFixed(1);
     }
     return Math.round(points).toString();
   }

@@ -30,8 +30,8 @@ export class CategoryCardComponent {
 
     // Format based on category type
     if (category === 'batters' || category === 'ops') {
-      // AVG and OPS use 3 decimal places without leading zero
-      return points.toFixed(3);
+      // AVG and OPS: multiply by 1000 and show 1 decimal (e.g., 299.9)
+      return (points * 1000).toFixed(1);
     }
 
     // Integer values for HR, Wins, RBI, SB, Games
@@ -46,7 +46,8 @@ export class CategoryCardComponent {
 
     // Format based on category type
     if (category === 'batters' || category === 'ops') {
-      return points.toFixed(3);
+      // AVG and OPS: multiply by 1000 and show 1 decimal (e.g., 299.9)
+      return (points * 1000).toFixed(1);
     }
 
     return Math.round(points).toString();
