@@ -240,6 +240,7 @@ src/app/
   - Desktop: Separate container to the right of the leaderboard
 - [x] Remove Home button from navbar: Redundant since leaderboard pages have "< Back to Home"
 - [ ] (Nice-to-have) Team theme selector: Allow user to select favorite MLB team, update app color theme based on team colors
+- [ ] Filter dropdown player list: Change player selection in filter dropdown from checkbox list to table format (matching My Profile picks display style)
 - [ ] Search/filter UX improvements:
   - Always show button labels (not just on desktop)
   - Rename "My Players" to "My Picks" for clarity

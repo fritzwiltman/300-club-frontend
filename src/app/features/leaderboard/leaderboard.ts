@@ -2,21 +2,22 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, u
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map, startWith } from 'rxjs';
-import { CategorySlug, getCategoryBySlug, MlbLeader, User, UserStanding } from '../../core/models';
-import { LeaderboardService, UserService } from '../../core/services';
-import { LeagueLeadersComponent, LoadingSpinnerComponent, RulesPopoverComponent, UserComparisonModalComponent } from '../../shared/ui';
+import { map } from 'rxjs';
+import { CategorySlug, getCategoryBySlug, MlbLeader, SavedFilter, User, UserStanding } from '../../core/models';
+import { FilterService, LeaderboardService, UserService } from '../../core/services';
+import { FilterDropdownComponent, LeagueLeadersComponent, LoadingSpinnerComponent, RulesPopoverComponent, UserComparisonModalComponent } from '../../shared/ui';
 
 @Component({
   selector: 'app-leaderboard',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, ReactiveFormsModule, LeagueLeadersComponent, LoadingSpinnerComponent, RulesPopoverComponent, UserComparisonModalComponent],
+  imports: [RouterLink, ReactiveFormsModule, FilterDropdownComponent, LeagueLeadersComponent, LoadingSpinnerComponent, RulesPopoverComponent, UserComparisonModalComponent],
   templateUrl: './leaderboard.html',
 })
 export class LeaderboardComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly leaderboardService = inject(LeaderboardService);
   private readonly userService = inject(UserService);
+  private readonly filterService = inject(FilterService);
 
   protected readonly isLoading = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -32,11 +33,18 @@ export class LeaderboardComponent {
   // Filter state
   protected readonly userNameFilters = signal<string[]>([]);
   protected readonly selectedPlayerFilters = signal<Set<string>>(new Set());
-  protected readonly showPlayerDropdown = signal(false);
 
-  // Form controls for search inputs
+  /**
+   * Saved filters for the current category.
+   */
+  protected readonly savedFiltersForCategory = computed(() => {
+    const slug = this.categorySlug();
+    if (!slug) return [];
+    return this.filterService.getSavedFiltersForCategory(slug);
+  });
+
+  // Form control for user search input
   protected readonly userSearchControl = new FormControl('', { nonNullable: true });
-  protected readonly playerSearchControl = new FormControl('', { nonNullable: true });
 
   protected readonly categorySlug = toSignal(
     this.route.paramMap.pipe(map((params) => params.get('category') as CategorySlug | null)),
@@ -171,33 +179,6 @@ export class LeaderboardComponent {
     return values.length > 0 ? Math.max(...values) : null;
   });
 
-  /**
-   * Player search value from the dropdown search input.
-   */
-  protected readonly playerSearchValue = toSignal(
-    this.playerSearchControl.valueChanges.pipe(startWith('')),
-    { initialValue: '' }
-  );
-
-  /**
-   * Player names filtered by the dropdown search input.
-   */
-  protected readonly filteredPlayerNames = computed(() => {
-    const allPlayers = this.allPlayerNames();
-    const search = this.playerSearchValue().toLowerCase().trim();
-    if (!search) return allPlayers;
-    return allPlayers.filter((p) => p.toLowerCase().includes(search));
-  });
-
-  /**
-   * Whether all of the current user's players are selected in the filter.
-   */
-  protected readonly allMyPlayersSelected = computed(() => {
-    const myPlayers = this.currentUserPickNames();
-    if (myPlayers.length === 0) return false;
-    const currentFilters = this.selectedPlayerFilters();
-    return myPlayers.every(p => currentFilters.has(p));
-  });
 
   /**
    * Standings filtered by all active filters.
@@ -383,13 +364,6 @@ export class LeaderboardComponent {
   }
 
   // Filter action methods
-  protected togglePlayerDropdown(): void {
-    this.showPlayerDropdown.update((v) => !v);
-    if (!this.showPlayerDropdown()) {
-      this.playerSearchControl.reset();
-    }
-  }
-
   protected togglePlayerFilter(playerName: string): void {
     this.selectedPlayerFilters.update((set) => {
       const newSet = new Set(set);
@@ -443,10 +417,26 @@ export class LeaderboardComponent {
 
   protected clearAllFilters(): void {
     this.userSearchControl.reset();
-    this.playerSearchControl.reset();
     this.userNameFilters.set([]);
     this.selectedPlayerFilters.set(new Set());
-    this.showPlayerDropdown.set(false);
+  }
+
+  // Saved filter handlers
+  protected onSaveFilter(data: { name: string; userNameFilters: readonly string[]; playerFilters: readonly string[] }): void {
+    const slug = this.categorySlug();
+    if (!slug) return;
+    this.filterService.saveFilter(slug, data.name, data.userNameFilters, data.playerFilters);
+  }
+
+  protected onDeleteFilter(filterId: string): void {
+    const slug = this.categorySlug();
+    if (!slug) return;
+    this.filterService.deleteFilter(slug, filterId);
+  }
+
+  protected onApplyFilter(filter: SavedFilter): void {
+    this.userNameFilters.set([...filter.userNameFilters]);
+    this.selectedPlayerFilters.set(new Set(filter.playerFilters));
   }
 
   /**

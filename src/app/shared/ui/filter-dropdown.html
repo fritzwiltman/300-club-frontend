@@ -1,0 +1,212 @@
+<!-- Filter Trigger Button -->
+<button
+  #triggerButton
+  type="button"
+  (click)="toggle()"
+  class="inline-flex items-center justify-center gap-1.5 px-2 sm:px-3 py-2 text-sm font-medium
+         border rounded-md transition-colors h-full
+         focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
+  [class.bg-club-sage]="hasActiveFilters()"
+  [class.border-club-green]="hasActiveFilters()"
+  [class.text-club-forest]="hasActiveFilters()"
+  [class.bg-white]="!hasActiveFilters()"
+  [class.dark:bg-gray-800]="!hasActiveFilters()"
+  [class.border-gray-300]="!hasActiveFilters()"
+  [class.dark:border-gray-600]="!hasActiveFilters()"
+  [class.text-club-forest]="!hasActiveFilters()"
+  [class.dark:text-gray-100]="!hasActiveFilters()"
+  [attr.aria-expanded]="isOpen()"
+  aria-haspopup="true"
+>
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+  </svg>
+  <span class="hidden sm:inline">Filter</span>
+  @if (activeFilterCount() > 0) {
+    <span class="bg-club-forest dark:bg-club-lime text-white dark:text-club-forest text-xs px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center">
+      {{ activeFilterCount() }}
+    </span>
+  }
+</button>
+
+<!-- Dropdown Panel -->
+@if (isOpen()) {
+  <div
+    class="absolute right-0 top-full mt-2 w-72 sm:w-80 z-50
+           bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600
+           rounded-lg shadow-lg overflow-hidden"
+    role="menu"
+  >
+    <!-- Player Search -->
+    <div class="p-3 border-b border-gray-100 dark:border-gray-700">
+      <input
+        type="search"
+        [formControl]="playerSearchControl"
+        placeholder="Search players..."
+        autocomplete="off"
+        class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-md
+               bg-white dark:bg-gray-700 text-club-forest dark:text-gray-100
+               focus:outline-none focus:ring-2 focus:ring-club-lime
+               placeholder:text-gray-400"
+      />
+    </div>
+
+    <!-- Saved Filters Section -->
+    @if (hasSavedFilters()) {
+      <div class="border-b border-gray-100 dark:border-gray-700">
+        <button
+          type="button"
+          (click)="toggleSavedFiltersSection()"
+          class="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold
+                 text-club-gray uppercase tracking-wide hover:bg-gray-50 dark:hover:bg-gray-700"
+        >
+          <span>Saved Filters</span>
+          <svg
+            class="w-4 h-4 transition-transform"
+            [class.rotate-180]="!showSavedFiltersSection()"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        @if (showSavedFiltersSection()) {
+          <div class="px-3 pb-3 space-y-1">
+            @for (filter of savedFilters(); track filter.id) {
+              <div
+                (click)="onApplyFilter(filter)"
+                class="flex items-center justify-between px-2 py-1.5 rounded-md cursor-pointer
+                       hover:bg-club-sage/30 dark:hover:bg-club-sage/20
+                       text-sm text-club-forest dark:text-gray-100"
+                role="menuitem"
+              >
+                <span class="truncate">{{ filter.name }}</span>
+                <button
+                  type="button"
+                  (click)="onDeleteFilter(filter.id, $event)"
+                  class="p-1 text-club-gray hover:text-club-burgundy rounded
+                         focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
+                  [attr.aria-label]="'Delete filter: ' + filter.name"
+                >
+                  <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Quick Actions -->
+    @if (currentUserPickNames().length > 0) {
+      <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
+        <span class="block text-xs font-semibold text-club-gray uppercase tracking-wide mb-2">Quick Actions</span>
+        <button
+          type="button"
+          (click)="onSelectMyPlayers()"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium
+                 border rounded-md transition-colors
+                 focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
+          [class.bg-club-sage]="allMyPlayersSelected()"
+          [class.border-club-green]="allMyPlayersSelected()"
+          [class.bg-white]="!allMyPlayersSelected()"
+          [class.dark:bg-gray-700]="!allMyPlayersSelected()"
+          [class.border-gray-200]="!allMyPlayersSelected()"
+          [class.dark:border-gray-600]="!allMyPlayersSelected()"
+          [title]="allMyPlayersSelected() ? 'Remove my picks from filter' : 'Select my picks'"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          My Picks
+        </button>
+      </div>
+    }
+
+    <!-- Player List -->
+    <div class="max-h-48 overflow-y-auto">
+      <div class="px-3 py-2">
+        <span class="block text-xs font-semibold text-club-gray uppercase tracking-wide mb-2">Players</span>
+        <div class="space-y-0.5">
+          @for (player of filteredPlayerNames(); track player) {
+            <label
+              class="flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer
+                     hover:bg-gray-50 dark:hover:bg-gray-700
+                     text-club-forest dark:text-gray-100"
+            >
+              <input
+                type="checkbox"
+                [checked]="isPlayerSelected(player)"
+                (change)="onPlayerToggle(player)"
+                class="rounded border-gray-300 text-club-lime focus:ring-club-lime"
+              />
+              <span class="text-sm truncate">{{ player }}</span>
+            </label>
+          }
+          @if (filteredPlayerNames().length === 0) {
+            <p class="text-sm text-club-gray text-center py-2">No players found</p>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Save Filter Section -->
+    @if (hasActiveFilters()) {
+      <div class="px-3 py-2 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+        @if (showSaveInput()) {
+          <div class="flex gap-2">
+            <input
+              type="text"
+              [value]="newFilterName()"
+              (input)="newFilterName.set($any($event.target).value)"
+              (keydown)="onSaveInputKeydown($event)"
+              placeholder="Filter name..."
+              autocomplete="off"
+              class="flex-1 px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-md
+                     bg-white dark:bg-gray-700 text-club-forest dark:text-gray-100
+                     focus:outline-none focus:ring-2 focus:ring-club-lime
+                     placeholder:text-gray-400"
+            />
+            <button
+              type="button"
+              (click)="onSaveFilter()"
+              [disabled]="!newFilterName().trim()"
+              class="px-2.5 py-1.5 text-sm font-medium text-white bg-club-green rounded-md
+                     hover:bg-club-forest focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime
+                     disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              (click)="toggleSaveInput()"
+              class="px-2 py-1.5 text-sm text-club-gray hover:text-club-forest
+                     focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime rounded-md"
+            >
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        } @else {
+          <button
+            type="button"
+            (click)="toggleSaveInput()"
+            class="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium
+                   text-club-green hover:text-club-forest
+                   focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime rounded-md"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+            </svg>
+            Save current filter
+          </button>
+        }
+      </div>
+    }
+  </div>
+}
