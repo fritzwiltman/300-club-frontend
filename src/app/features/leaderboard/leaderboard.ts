@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, u
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { debounceTime, distinctUntilChanged, map, startWith } from 'rxjs';
+import { map, startWith } from 'rxjs';
 import { CategorySlug, getCategoryBySlug, MlbLeader, User, UserStanding } from '../../core/models';
 import { LeaderboardService, UserService } from '../../core/services';
 import { LeagueLeadersComponent, LoadingSpinnerComponent, RulesPopoverComponent, UserComparisonModalComponent } from '../../shared/ui';
@@ -30,7 +30,7 @@ export class LeaderboardComponent {
   protected readonly comparisonUserB = signal<User | null>(null);
 
   // Filter state
-  protected readonly userNameFilter = signal<string>('');
+  protected readonly userNameFilters = signal<string[]>([]);
   protected readonly selectedPlayerFilters = signal<Set<string>>(new Set());
   protected readonly showPlayerDropdown = signal(false);
 
@@ -150,7 +150,7 @@ export class LeaderboardComponent {
    */
   protected readonly hasActiveFilters = computed(() => {
     return (
-      this.userNameFilter().trim() !== '' ||
+      this.userNameFilters().length > 0 ||
       this.selectedPlayerFilters().size > 0
     );
   });
@@ -190,18 +190,30 @@ export class LeaderboardComponent {
   });
 
   /**
+   * Whether all of the current user's players are selected in the filter.
+   */
+  protected readonly allMyPlayersSelected = computed(() => {
+    const myPlayers = this.currentUserPickNames();
+    if (myPlayers.length === 0) return false;
+    const currentFilters = this.selectedPlayerFilters();
+    return myPlayers.every(p => currentFilters.has(p));
+  });
+
+  /**
    * Standings filtered by all active filters.
+   * User name filters use OR logic: matches if ANY filter matches.
+   * Player filters use AND logic: must have ALL selected players.
    */
   protected readonly filteredStandings = computed(() => {
     let standings = this._standings();
-    const userNameQuery = this.userNameFilter().toLowerCase().trim();
+    const userNameQueries = this.userNameFilters().map(q => q.toLowerCase().trim());
     const playerFilters = this.selectedPlayerFilters();
     const cat = this.category();
 
-    // Apply user name filter
-    if (userNameQuery) {
+    // Apply user name filters (OR logic - match any)
+    if (userNameQueries.length > 0) {
       standings = standings.filter((s) =>
-        s.userName.toLowerCase().includes(userNameQuery)
+        userNameQueries.some(query => s.userName.toLowerCase().includes(query))
       );
     }
 
@@ -224,13 +236,6 @@ export class LeaderboardComponent {
         this.loadLeaderboard(slug, season);
       }
     });
-
-    // Sync user search input with signal (debounced)
-    this.userSearchControl.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged())
-      .subscribe((value) => {
-        this.userNameFilter.set(value);
-      });
 
     // Clear filters when category changes (but not on initial load)
     let previousSlug: CategorySlug | null = null;
@@ -399,21 +404,47 @@ export class LeaderboardComponent {
 
   protected selectMyPlayers(): void {
     const myPlayers = this.currentUserPickNames();
-    if (myPlayers.length > 0) {
+    if (myPlayers.length === 0) return;
+
+    const currentFilters = this.selectedPlayerFilters();
+    const allMyPlayersSelected = myPlayers.every(p => currentFilters.has(p));
+
+    if (allMyPlayersSelected) {
+      // Remove all my players from the filter
+      this.selectedPlayerFilters.update(set => {
+        const newSet = new Set(set);
+        myPlayers.forEach(p => newSet.delete(p));
+        return newSet;
+      });
+    } else {
+      // Add all my players to the filter
       this.selectedPlayerFilters.set(new Set(myPlayers));
-      this.showPlayerDropdown.set(true);
     }
   }
 
-  protected clearUserNameFilter(): void {
+  protected onUserSearchKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.addUserNameFilter();
+    }
+  }
+
+  protected addUserNameFilter(): void {
+    const value = this.userSearchControl.value.trim();
+    if (value && !this.userNameFilters().includes(value)) {
+      this.userNameFilters.update(filters => [...filters, value]);
+    }
     this.userSearchControl.reset();
-    this.userNameFilter.set('');
+  }
+
+  protected removeUserNameFilter(filter: string): void {
+    this.userNameFilters.update(filters => filters.filter(f => f !== filter));
   }
 
   protected clearAllFilters(): void {
     this.userSearchControl.reset();
     this.playerSearchControl.reset();
-    this.userNameFilter.set('');
+    this.userNameFilters.set([]);
     this.selectedPlayerFilters.set(new Set());
     this.showPlayerDropdown.set(false);
   }
