@@ -33,81 +33,21 @@
       </div>
 
       <!-- Content -->
-      <div class="flex-1 overflow-y-auto p-4 space-y-6">
-        <!-- Season Section -->
-        <section>
-          <h3 class="text-xs font-semibold text-club-gray uppercase tracking-wide mb-2">
-            Season
-          </h3>
-          <div class="space-y-1">
-            @for (season of leaderboardService.availableSeasons; track season) {
-              <button
-                type="button"
-                (click)="onSeasonSelect(season)"
-                class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm
-                       transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
-                [class.bg-club-sage]="leaderboardService.selectedSeason() === season"
-                [class.text-club-forest]="leaderboardService.selectedSeason() === season"
-                [class.font-medium]="leaderboardService.selectedSeason() === season"
-                [class.hover:bg-gray-100]="leaderboardService.selectedSeason() !== season"
-                [class.dark:hover:bg-gray-700]="leaderboardService.selectedSeason() !== season"
-                [class.text-club-forest]="leaderboardService.selectedSeason() !== season"
-              >
-                <span>{{ season }}</span>
-                @if (leaderboardService.selectedSeason() === season) {
-                  <svg class="w-4 h-4 text-club-green" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                  </svg>
-                }
-              </button>
-            }
-          </div>
-        </section>
-
-        <!-- Appearance Section -->
-        <section>
-          <h3 class="text-xs font-semibold text-club-gray uppercase tracking-wide mb-2">
-            Appearance
-          </h3>
-          <div class="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
-            @for (option of themeOptions; track option.value) {
-              <button
-                type="button"
-                (click)="themeService.setTheme(option.value)"
-                class="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs
-                       transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
-                [class.bg-white]="themeService.theme() === option.value"
-                [class.dark:bg-gray-700]="themeService.theme() === option.value"
-                [class.shadow-sm]="themeService.theme() === option.value"
-                [class.text-club-forest]="themeService.theme() === option.value"
-                [class.font-medium]="themeService.theme() === option.value"
-                [class.text-club-gray]="themeService.theme() !== option.value"
-                [class.hover:text-club-forest]="themeService.theme() !== option.value"
-                [attr.aria-pressed]="themeService.theme() === option.value"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="option.icon" />
-                </svg>
-                <span>{{ option.label }}</span>
-              </button>
-            }
-          </div>
-        </section>
-
-        <!-- User Section -->
-        <section>
+      <div class="flex-1 overflow-y-auto p-4 flex flex-col">
+        <!-- User Section (top) -->
+        <section class="mb-6">
           <h3 class="text-xs font-semibold text-club-gray uppercase tracking-wide mb-2">
             Current User
           </h3>
           @if (userService.isUserSelected()) {
-            <div class="bg-club-sage/30 rounded-lg p-3">
-              <div class="font-medium text-club-forest">
+            <div class="bg-club-sage/30 dark:bg-club-sage/20 rounded-lg p-3">
+              <div class="font-medium text-club-forest dark:text-gray-100">
                 {{ userService.currentUserName() }}
               </div>
               <button
                 type="button"
                 (click)="onChangeUser()"
-                class="mt-2 text-sm text-club-green hover:text-club-forest underline
+                class="mt-2 text-sm text-club-green hover:text-club-forest dark:hover:text-club-lime underline
                        focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime rounded"
               >
                 Switch User
@@ -121,7 +61,7 @@
         </section>
 
         <!-- Navigation Section -->
-        <section>
+        <section class="mb-6">
           <h3 class="text-xs font-semibold text-club-gray uppercase tracking-wide mb-2">
             Navigation
           </h3>
@@ -129,7 +69,7 @@
             <a
               routerLink="/"
               (click)="close.emit()"
-              class="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-club-forest
+              class="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-club-forest dark:text-gray-100
                      hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
                      focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
             >
@@ -142,7 +82,7 @@
               <a
                 [routerLink]="['/user', userService.currentUser()?.mbrId]"
                 (click)="close.emit()"
-                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-club-forest
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-club-forest dark:text-gray-100
                        hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
                        focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
               >
@@ -155,7 +95,7 @@
             <a
               routerLink="/users"
               (click)="close.emit()"
-              class="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-club-forest
+              class="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-club-forest dark:text-gray-100
                      hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
                      focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
             >
@@ -164,6 +104,64 @@
               </svg>
               <span>Browse Users</span>
             </a>
+          </div>
+        </section>
+
+        <!-- Season Section (dropdown) -->
+        <section class="mb-6">
+          <h3 class="text-xs font-semibold text-club-gray uppercase tracking-wide mb-2">
+            Season
+          </h3>
+          <select
+            (change)="onSeasonChange($event)"
+            class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600
+                   bg-white dark:bg-gray-700 text-club-forest dark:text-gray-100
+                   text-sm focus:outline-none focus:ring-2 focus:ring-club-lime focus:border-transparent
+                   cursor-pointer"
+          >
+            @for (season of leaderboardService.availableSeasons; track season) {
+              <option
+                [value]="season"
+                [selected]="leaderboardService.selectedSeason() === season"
+              >
+                {{ season }} Season
+              </option>
+            }
+          </select>
+        </section>
+
+        <!-- Spacer to push appearance to bottom -->
+        <div class="flex-1"></div>
+
+        <!-- Appearance Section (bottom) -->
+        <section>
+          <h3 class="text-xs font-semibold text-club-gray uppercase tracking-wide mb-2">
+            Appearance
+          </h3>
+          <div class="flex gap-1 p-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
+            @for (option of themeOptions; track option.value) {
+              <button
+                type="button"
+                (click)="themeService.setTheme(option.value)"
+                class="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs
+                       transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
+                [class.bg-white]="themeService.theme() === option.value"
+                [class.dark:bg-gray-600]="themeService.theme() === option.value"
+                [class.shadow-sm]="themeService.theme() === option.value"
+                [class.text-club-forest]="themeService.theme() === option.value"
+                [class.dark:text-gray-100]="themeService.theme() === option.value"
+                [class.font-medium]="themeService.theme() === option.value"
+                [class.text-club-gray]="themeService.theme() !== option.value"
+                [class.hover:text-club-forest]="themeService.theme() !== option.value"
+                [class.dark:hover:text-gray-100]="themeService.theme() !== option.value"
+                [attr.aria-pressed]="themeService.theme() === option.value"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="option.icon" />
+                </svg>
+                <span>{{ option.label }}</span>
+              </button>
+            }
           </div>
         </section>
       </div>

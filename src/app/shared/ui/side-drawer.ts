@@ -7,7 +7,7 @@ import {
   output,
   viewChild,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { LeaderboardService, Season, Theme, ThemeService, UserService } from '../../core/services';
 
 @Component({
@@ -21,6 +21,7 @@ export class SideDrawerComponent {
   protected readonly userService = inject(UserService);
   protected readonly leaderboardService = inject(LeaderboardService);
   protected readonly themeService = inject(ThemeService);
+  private readonly router = inject(Router);
 
   readonly close = output<void>();
 
@@ -39,13 +40,17 @@ export class SideDrawerComponent {
     }, 0);
   }
 
-  protected onSeasonSelect(season: Season): void {
+  protected onSeasonChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const season = Number(select.value) as Season;
     this.leaderboardService.setSeason(season);
   }
 
   protected onChangeUser(): void {
     this.close.emit();
     this.userService.clearUser();
+    // Navigate to home so the user selection modal appears
+    this.router.navigate(['/']);
   }
 
   @HostListener('document:keydown.escape')
