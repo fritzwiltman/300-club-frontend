@@ -1,4 +1,4 @@
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <!-- Back Link -->
       <a
         routerLink="/"
@@ -46,26 +46,29 @@
           }
         </header>
 
-        <!-- Category Cards Grid -->
-        @if (categoryData().length > 0) {
+        <!-- Category Cards - CSS columns for masonry layout -->
+        @if (displayCategories().length > 0) {
           <div
-            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            class="columns-1 sm:columns-2 gap-4"
             role="list"
             aria-label="Category picks"
           >
-            @for (cat of categoryData(); track cat.category) {
-              <div role="listitem" class="flex flex-col">
-                <!-- Category Card (clickable to expand) -->
+            @for (cat of displayCategories(); track cat.slug) {
+              <div
+                role="listitem"
+                class="break-inside-avoid mb-4 rounded-xl bg-white dark:bg-gray-800 shadow-md
+                       border-2 transition-all duration-200 overflow-hidden"
+                [class.border-club-lime]="isExpanded(cat.slug)"
+                [class.border-transparent]="!isExpanded(cat.slug)"
+              >
+                <!-- Category Card Header (clickable to expand) -->
                 <button
                   type="button"
-                  (click)="toggleExpand(cat.category)"
-                  class="text-left h-full rounded-xl bg-white dark:bg-gray-800 shadow-md p-5
-                         border-2 transition-all duration-200
-                         focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
-                  [class.border-club-lime]="isExpanded(cat.category)"
-                  [class.border-transparent]="!isExpanded(cat.category)"
-                  [class.hover:border-club-sage]="!isExpanded(cat.category)"
-                  [attr.aria-expanded]="isExpanded(cat.category)"
+                  (click)="toggleExpand(cat.slug)"
+                  class="w-full text-left p-5 transition-colors
+                         focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-club-lime"
+                  [class.hover:bg-club-sage/10]="!isExpanded(cat.slug)"
+                  [attr.aria-expanded]="isExpanded(cat.slug)"
                 >
                   <!-- Category Name with chevron -->
                   <div class="flex items-center justify-between">
@@ -73,13 +76,13 @@
                       <h2 class="text-lg font-bold text-club-forest dark:text-gray-100">
                         {{ cat.displayName }}
                       </h2>
-                      @if (getCategory(cat.category); as fullCat) {
+                      @if (cat.slug !== 'alternates' && getCategory(cat.slug); as fullCat) {
                         <app-rules-popover [category]="fullCat" />
                       }
                     </div>
                     <svg
                       class="w-5 h-5 text-club-gray transition-transform"
-                      [class.rotate-180]="isExpanded(cat.category)"
+                      [class.rotate-180]="isExpanded(cat.slug)"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -93,7 +96,7 @@
                   <div class="mt-3">
                     @if (cat.userPoints !== null) {
                       <span class="text-2xl font-bold text-club-forest dark:text-gray-100">
-                        {{ formatPoints(cat.userPoints, cat.category) }}
+                        {{ formatPoints(cat.userPoints, cat.slug) }}
                       </span>
                       <span class="text-sm text-club-gray ml-1">
                         {{ cat.unit }}
@@ -103,186 +106,158 @@
                     }
                   </div>
 
-                  <!-- Click hint -->
-                  <p class="mt-2 text-xs text-club-gray">
-                    @if (isExpanded(cat.category)) {
-                      Click to collapse
-                    } @else {
-                      Click to view picks
-                    }
-                  </p>
                 </button>
 
                 <!-- Expanded Picks Section -->
-                @if (isExpanded(cat.category) && cat.standing) {
-                  <div class="mt-2 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-                    <h3 class="text-sm font-semibold text-club-forest dark:text-gray-100 mb-3">Picks</h3>
-                    @switch (cat.category) {
+                @if (isExpanded(cat.slug)) {
+                  <div class="px-5 pb-5 pt-2 border-t border-gray-200 dark:border-gray-700">
+                    @switch (cat.slug) {
+                      @case ('alternates') {
+                        @if (cat.alternatePicks?.length) {
+                          <table class="w-full text-sm">
+                            <thead>
+                              <tr class="text-left text-xs text-club-gray border-b border-gray-200 dark:border-gray-700">
+                                <th class="pb-2 font-medium">Player</th>
+                                <th class="pb-2 font-medium text-right">AVG</th>
+                              </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                              @for (pick of cat.alternatePicks; track pick.playerName) {
+                                <tr [class.text-club-gray]="pick.isDisqualified">
+                                  <td class="py-2 dark:text-gray-100" [class.text-club-gray]="pick.isDisqualified">
+                                    {{ pick.playerName }}
+                                    @if (pick.isDisqualified) {
+                                      <span class="ml-1 text-xs px-1 py-0.5 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded">DQ</span>
+                                    }
+                                  </td>
+                                  <td class="py-2 text-right font-mono">{{ (pick.average * 1000).toFixed(0) }}</td>
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
+                        } @else {
+                          <p class="text-sm text-club-gray">No alternate picks data available</p>
+                        }
+                      }
                       @case ('batters') {
-                        @if (cat.standing.batterPicks?.length) {
-                          <div class="space-y-3">
-                            <div>
-                              <h4 class="text-xs font-medium text-club-gray uppercase mb-1">Regular Picks</h4>
-                              <div class="grid gap-2 sm:grid-cols-2">
-                                @for (pick of cat.standing.batterPicks; track pick.playerName) {
-                                  <div
-                                    class="flex justify-between items-center px-3 py-2 rounded-md text-sm"
-                                    [class.bg-white]="!pick.isDisqualified"
-                                    [class.dark:bg-gray-800]="!pick.isDisqualified"
-                                    [class.bg-red-50]="pick.isDisqualified"
-                                    [class.dark:bg-red-900/30]="pick.isDisqualified"
-                                    [class.border]="true"
-                                    [class.border-gray-200]="!pick.isDisqualified"
-                                    [class.dark:border-gray-700]="!pick.isDisqualified"
-                                    [class.border-red-200]="pick.isDisqualified"
-                                    [class.dark:border-red-800]="pick.isDisqualified"
-                                  >
-                                    <span class="dark:text-gray-100" [class.text-club-gray]="pick.isDisqualified">{{ pick.playerName }}</span>
-                                    <div class="flex items-center gap-2">
-                                      @if (pick.isDisqualified) {
-                                        <span class="text-xs px-1.5 py-0.5 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded">
-                                          {{ pick.plateAppearances }} PA
-                                        </span>
-                                      } @else {
-                                        <span class="font-mono text-club-gray">{{ (pick.average * 1000).toFixed(0) }}</span>
-                                      }
-                                    </div>
-                                  </div>
-                                }
-                              </div>
-                            </div>
-                            @if (cat.standing.alternatePicks?.length) {
-                              <div>
-                                <h4 class="text-xs font-medium text-club-gray uppercase mb-1">Alternate Batters</h4>
-                                <div class="grid gap-2 sm:grid-cols-2">
-                                  @for (pick of cat.standing.alternatePicks; track pick.playerName) {
-                                    <div
-                                      class="flex justify-between items-center px-3 py-2 rounded-md text-sm"
-                                      [class.bg-white]="!pick.isDisqualified"
-                                      [class.dark:bg-gray-800]="!pick.isDisqualified"
-                                      [class.bg-red-50]="pick.isDisqualified"
-                                      [class.dark:bg-red-900/30]="pick.isDisqualified"
-                                      [class.border]="true"
-                                      [class.border-gray-200]="!pick.isDisqualified"
-                                      [class.dark:border-gray-700]="!pick.isDisqualified"
-                                      [class.border-red-200]="pick.isDisqualified"
-                                      [class.dark:border-red-800]="pick.isDisqualified"
-                                    >
-                                      <span class="dark:text-gray-100" [class.text-club-gray]="pick.isDisqualified">{{ pick.playerName }}</span>
-                                      <span class="font-mono text-club-gray">{{ (pick.average * 1000).toFixed(0) }}</span>
-                                    </div>
-                                  }
-                                </div>
-                              </div>
-                            }
-                          </div>
+                        @if (cat.standing?.batterPicks?.length) {
+                          <table class="w-full text-sm">
+                            <thead>
+                              <tr class="text-left text-xs text-club-gray border-b border-gray-200 dark:border-gray-700">
+                                <th class="pb-2 font-medium">Player</th>
+                                <th class="pb-2 font-medium text-right">AVG</th>
+                                <th class="pb-2 font-medium text-right">OPS</th>
+                                <th class="pb-2 font-medium text-right">PA</th>
+                              </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                              @for (pick of cat.standing!.batterPicks; track pick.playerName) {
+                                <tr [class.text-club-gray]="pick.isDisqualified">
+                                  <td class="py-2 dark:text-gray-100" [class.text-club-gray]="pick.isDisqualified">
+                                    {{ pick.playerName }}
+                                    @if (pick.isDisqualified) {
+                                      <span class="ml-1 text-xs px-1 py-0.5 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded">DQ</span>
+                                    }
+                                  </td>
+                                  <td class="py-2 text-right font-mono">{{ pick.isDisqualified ? '--' : (pick.average * 1000).toFixed(0) }}</td>
+                                  <td class="py-2 text-right font-mono">{{ pick.isDisqualified ? '--' : (pick.ops * 1000).toFixed(0) }}</td>
+                                  <td class="py-2 text-right font-mono">{{ pick.plateAppearances ?? '--' }}</td>
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
                         } @else {
                           <p class="text-sm text-club-gray">No picks data available</p>
                         }
                       }
                       @case ('ops') {
-                        @if (cat.standing.batterPicks?.length) {
-                          <div class="space-y-3">
-                            <div>
-                              <h4 class="text-xs font-medium text-club-gray uppercase mb-1">Regular Picks</h4>
-                              <div class="grid gap-2 sm:grid-cols-2">
-                                @for (pick of cat.standing.batterPicks; track pick.playerName) {
-                                  <div
-                                    class="flex justify-between items-center px-3 py-2 rounded-md text-sm"
-                                    [class.bg-white]="!pick.isDisqualified"
-                                    [class.dark:bg-gray-800]="!pick.isDisqualified"
-                                    [class.bg-red-50]="pick.isDisqualified"
-                                    [class.dark:bg-red-900/30]="pick.isDisqualified"
-                                    [class.border]="true"
-                                    [class.border-gray-200]="!pick.isDisqualified"
-                                    [class.dark:border-gray-700]="!pick.isDisqualified"
-                                    [class.border-red-200]="pick.isDisqualified"
-                                    [class.dark:border-red-800]="pick.isDisqualified"
-                                  >
-                                    <span class="dark:text-gray-100" [class.text-club-gray]="pick.isDisqualified">{{ pick.playerName }}</span>
-                                    <div class="flex items-center gap-2">
-                                      @if (pick.isDisqualified) {
-                                        <span class="text-xs px-1.5 py-0.5 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded">
-                                          {{ pick.plateAppearances }} PA
-                                        </span>
-                                      } @else {
-                                        <span class="font-mono text-club-gray">{{ (pick.ops * 1000).toFixed(0) }}</span>
-                                      }
-                                    </div>
-                                  </div>
-                                }
-                              </div>
-                            </div>
-                            @if (cat.standing.alternatePicks?.length) {
-                              <div>
-                                <h4 class="text-xs font-medium text-club-gray uppercase mb-1">Alternate Batters</h4>
-                                <div class="grid gap-2 sm:grid-cols-2">
-                                  @for (pick of cat.standing.alternatePicks; track pick.playerName) {
-                                    <div
-                                      class="flex justify-between items-center px-3 py-2 rounded-md text-sm"
-                                      [class.bg-white]="!pick.isDisqualified"
-                                      [class.dark:bg-gray-800]="!pick.isDisqualified"
-                                      [class.bg-red-50]="pick.isDisqualified"
-                                      [class.dark:bg-red-900/30]="pick.isDisqualified"
-                                      [class.border]="true"
-                                      [class.border-gray-200]="!pick.isDisqualified"
-                                      [class.dark:border-gray-700]="!pick.isDisqualified"
-                                      [class.border-red-200]="pick.isDisqualified"
-                                      [class.dark:border-red-800]="pick.isDisqualified"
-                                    >
-                                      <span class="dark:text-gray-100" [class.text-club-gray]="pick.isDisqualified">{{ pick.playerName }}</span>
-                                      <span class="font-mono text-club-gray">{{ (pick.average * 1000).toFixed(0) }}</span>
-                                    </div>
-                                  }
-                                </div>
-                              </div>
-                            }
-                          </div>
+                        @if (cat.standing?.batterPicks?.length) {
+                          <table class="w-full text-sm">
+                            <thead>
+                              <tr class="text-left text-xs text-club-gray border-b border-gray-200 dark:border-gray-700">
+                                <th class="pb-2 font-medium">Player</th>
+                                <th class="pb-2 font-medium text-right">OPS</th>
+                                <th class="pb-2 font-medium text-right">AVG</th>
+                                <th class="pb-2 font-medium text-right">PA</th>
+                              </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                              @for (pick of cat.standing!.batterPicks; track pick.playerName) {
+                                <tr [class.text-club-gray]="pick.isDisqualified">
+                                  <td class="py-2 dark:text-gray-100" [class.text-club-gray]="pick.isDisqualified">
+                                    {{ pick.playerName }}
+                                    @if (pick.isDisqualified) {
+                                      <span class="ml-1 text-xs px-1 py-0.5 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded">DQ</span>
+                                    }
+                                  </td>
+                                  <td class="py-2 text-right font-mono">{{ pick.isDisqualified ? '--' : (pick.ops * 1000).toFixed(0) }}</td>
+                                  <td class="py-2 text-right font-mono">{{ pick.isDisqualified ? '--' : (pick.average * 1000).toFixed(0) }}</td>
+                                  <td class="py-2 text-right font-mono">{{ pick.plateAppearances ?? '--' }}</td>
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
                         } @else {
                           <p class="text-sm text-club-gray">No picks data available</p>
                         }
                       }
                       @case ('homeruns') {
-                        @if (cat.standing.homerunPicks?.length) {
-                          <div class="grid gap-2 sm:grid-cols-2">
-                            @for (pick of cat.standing.homerunPicks; track pick.playerName) {
-                              <div class="flex justify-between items-center px-3 py-2 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 text-sm">
-                                <span class="dark:text-gray-100">{{ pick.playerName }}</span>
-                                <span class="font-mono font-semibold text-club-gray">{{ pick.homeRuns }} HR</span>
-                              </div>
-                            }
-                          </div>
+                        @if (cat.standing?.homerunPicks?.length) {
+                          <table class="w-full text-sm">
+                            <thead>
+                              <tr class="text-left text-xs text-club-gray border-b border-gray-200 dark:border-gray-700">
+                                <th class="pb-2 font-medium">Player</th>
+                                <th class="pb-2 font-medium text-right">HR</th>
+                              </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                              @for (pick of cat.standing!.homerunPicks; track pick.playerName) {
+                                <tr>
+                                  <td class="py-2 dark:text-gray-100">{{ pick.playerName }}</td>
+                                  <td class="py-2 text-right font-mono font-semibold">{{ pick.homeRuns }}</td>
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
                         } @else {
                           <p class="text-sm text-club-gray">No picks data available</p>
                         }
                       }
                       @case ('pitchers') {
-                        @if (cat.standing.pitcherPicks?.length) {
-                          <div class="grid gap-2 sm:grid-cols-2">
-                            @for (pick of cat.standing.pitcherPicks; track pick.playerName) {
-                              <div class="flex justify-between items-center px-3 py-2 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 text-sm">
-                                <span class="dark:text-gray-100">{{ pick.playerName }}</span>
-                                <div class="flex gap-2 font-mono text-club-gray text-xs">
-                                  <span>{{ pick.wins }}-{{ pick.losses }}</span>
-                                  <span>{{ pick.era.toFixed(2) }} ERA</span>
-                                  <span>{{ pick.strikeouts }} K</span>
-                                </div>
-                              </div>
-                            }
-                          </div>
+                        @if (cat.standing?.pitcherPicks?.length) {
+                          <table class="w-full text-sm">
+                            <thead>
+                              <tr class="text-left text-xs text-club-gray border-b border-gray-200 dark:border-gray-700">
+                                <th class="pb-2 font-medium">Player</th>
+                                <th class="pb-2 font-medium text-right">Record</th>
+                                <th class="pb-2 font-medium text-right">ERA</th>
+                                <th class="pb-2 font-medium text-right">K</th>
+                              </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                              @for (pick of cat.standing!.pitcherPicks; track pick.playerName) {
+                                <tr>
+                                  <td class="py-2 dark:text-gray-100">{{ pick.playerName }}</td>
+                                  <td class="py-2 text-right font-mono">{{ pick.wins }}-{{ pick.losses }}</td>
+                                  <td class="py-2 text-right font-mono">{{ pick.era.toFixed(2) }}</td>
+                                  <td class="py-2 text-right font-mono">{{ pick.strikeouts }}</td>
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
                         } @else {
                           <p class="text-sm text-club-gray">No picks data available</p>
                         }
                       }
                       @case ('rbi-champion') {
                         <div class="space-y-2">
-                          @if (cat.standing.predictedPlayer) {
+                          @if (cat.standing?.predictedPlayer) {
                             <div class="flex items-center gap-2">
                               <span class="text-sm text-club-gray">Predicted:</span>
-                              <span class="font-medium dark:text-gray-100" [class.text-club-green]="cat.standing.isCorrectPlayer">
-                                {{ cat.standing.predictedPlayer }}
+                              <span class="font-medium dark:text-gray-100" [class.text-club-green]="cat.standing!.isCorrectPlayer">
+                                {{ cat.standing!.predictedPlayer }}
                               </span>
-                              @if (cat.standing.isCorrectPlayer) {
+                              @if (cat.standing!.isCorrectPlayer) {
                                 <span class="text-xs px-1.5 py-0.5 bg-club-lime/30 text-club-forest rounded">Correct!</span>
                               }
                             </div>
@@ -293,13 +268,13 @@
                       }
                       @case ('stolen-bases') {
                         <div class="space-y-2">
-                          @if (cat.standing.predictedPlayer) {
+                          @if (cat.standing?.predictedPlayer) {
                             <div class="flex items-center gap-2">
                               <span class="text-sm text-club-gray">Predicted:</span>
-                              <span class="font-medium dark:text-gray-100" [class.text-club-green]="cat.standing.isCorrectPlayer">
-                                {{ cat.standing.predictedPlayer }}
+                              <span class="font-medium dark:text-gray-100" [class.text-club-green]="cat.standing!.isCorrectPlayer">
+                                {{ cat.standing!.predictedPlayer }}
                               </span>
-                              @if (cat.standing.isCorrectPlayer) {
+                              @if (cat.standing!.isCorrectPlayer) {
                                 <span class="text-xs px-1.5 py-0.5 bg-club-lime/30 text-club-forest rounded">Correct!</span>
                               }
                             </div>
@@ -310,22 +285,24 @@
                       }
                       @case ('dimaggio') {
                         <div class="text-sm text-club-gray">
-                          <p>Predicted streak: <span class="font-semibold text-club-forest dark:text-gray-100">{{ cat.standing.points }} games</span></p>
+                          <p>Predicted streak: <span class="font-semibold text-club-forest dark:text-gray-100">{{ cat.standing?.points }} games</span></p>
                         </div>
                       }
                     }
 
-                    <!-- Link to full leaderboard -->
-                    <a
-                      [routerLink]="['/leaderboard', cat.category]"
-                      class="mt-3 inline-flex items-center gap-1 text-sm text-club-green hover:text-club-forest
-                             focus:outline-none focus-visible:underline"
-                    >
-                      View full leaderboard
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </a>
+                    <!-- Link to full leaderboard (not for alternates) -->
+                    @if (cat.slug !== 'alternates') {
+                      <a
+                        [routerLink]="['/leaderboard', cat.slug]"
+                        class="mt-4 inline-flex items-center gap-1 text-sm text-club-green hover:text-club-forest
+                               focus:outline-none focus-visible:underline"
+                      >
+                        View full leaderboard
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </a>
+                    }
                   </div>
                 }
               </div>

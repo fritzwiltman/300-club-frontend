@@ -17,12 +17,25 @@ import {
   getCategoryBySlug,
   UserStanding,
   User,
+  AlternatePick,
 } from '../../core/models';
 import { LeaderboardService, UserService } from '../../core/services';
 import { LoadingSpinnerComponent, RulesPopoverComponent } from '../../shared/ui';
 
+// Extended slug type to include the pseudo-category for alternates
+type ProfileCategorySlug = CategorySlug | 'alternates';
+
 interface CategoryWithStanding extends CategorySummary {
   standing: UserStanding | null;
+}
+
+interface ProfileCategory {
+  slug: ProfileCategorySlug;
+  displayName: string;
+  unit: string;
+  userPoints: number | null;
+  standing: UserStanding | null;
+  alternatePicks?: readonly AlternatePick[];
 }
 
 @Component({
@@ -40,10 +53,54 @@ export class UserProfileComponent {
   protected readonly error = signal<string | null>(null);
   private readonly _profileUser = signal<User | null>(null);
   private readonly _categoryData = signal<CategoryWithStanding[]>([]);
-  protected readonly expandedCategory = signal<CategorySlug | null>(null);
+  protected readonly expandedCategories = signal<Set<ProfileCategorySlug>>(new Set());
 
   protected readonly profileUser = this._profileUser.asReadonly();
   protected readonly categoryData = this._categoryData.asReadonly();
+
+  // Display categories including the alternates pseudo-category
+  protected readonly displayCategories = computed((): ProfileCategory[] => {
+    const data = this._categoryData();
+    if (data.length === 0) return [];
+
+    const result: ProfileCategory[] = [];
+
+    // Find alternate picks - check batters first, then homeruns (homeruns endpoint returns them)
+    const battersData = data.find(c => c.category === 'batters');
+    const homerunsData = data.find(c => c.category === 'homeruns');
+    const alternatePicks = battersData?.standing?.alternatePicks ?? homerunsData?.standing?.alternatePicks;
+
+    for (const cat of data) {
+      // Add the category
+      result.push({
+        slug: cat.category,
+        displayName: cat.displayName,
+        unit: cat.unit,
+        userPoints: cat.userPoints,
+        standing: cat.standing,
+      });
+
+      // After batters, insert the alternates pseudo-category
+      if (cat.category === 'batters' && alternatePicks?.length) {
+        // Calculate alternates average
+        const qualifiedAlternates = alternatePicks.filter(p => !p.isDisqualified);
+        const avgPoints = qualifiedAlternates.length > 0
+          ? qualifiedAlternates.reduce((sum, p) => sum + p.average, 0) / qualifiedAlternates.length
+          : null;
+
+        result.push({
+          slug: 'alternates',
+          displayName: 'Alternate Batters',
+          unit: 'AVG',
+          userPoints: avgPoints,
+          standing: null,
+          alternatePicks: alternatePicks,
+        });
+      }
+    }
+
+    return result;
+  });
 
   protected readonly userId = toSignal(
     this.route.paramMap.pipe(map((params) => params.get('userId'))),
@@ -149,20 +206,23 @@ export class UserProfileComponent {
     });
   }
 
-  protected toggleExpand(category: CategorySlug): void {
-    if (this.expandedCategory() === category) {
-      this.expandedCategory.set(null);
+  protected toggleExpand(category: ProfileCategorySlug): void {
+    const current = this.expandedCategories();
+    const newSet = new Set(current);
+    if (newSet.has(category)) {
+      newSet.delete(category);
     } else {
-      this.expandedCategory.set(category);
+      newSet.add(category);
     }
+    this.expandedCategories.set(newSet);
   }
 
-  protected isExpanded(category: CategorySlug): boolean {
-    return this.expandedCategory() === category;
+  protected isExpanded(category: ProfileCategorySlug): boolean {
+    return this.expandedCategories().has(category);
   }
 
-  protected formatPoints(points: number, category: CategorySlug): string {
-    if (category === 'batters' || category === 'ops') {
+  protected formatPoints(points: number, category: ProfileCategorySlug): string {
+    if (category === 'batters' || category === 'ops' || category === 'alternates') {
       // AVG and OPS: multiply by 1000 and show 1 decimal (e.g., 299.9)
       return (points * 1000).toFixed(1);
     }
