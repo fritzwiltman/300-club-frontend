@@ -87,6 +87,11 @@ export interface RawBatterEntry {
     player_name: string;
     plate_appearances: number | string;
   }[];
+  readonly alternate_batters_picks?: readonly {
+    player_name: string;
+    average: number | string;
+    is_disqualified: boolean;
+  }[];
 }
 
 export interface RawOpsEntry {
@@ -103,6 +108,11 @@ export interface RawOpsEntry {
   readonly disqualified_picks?: readonly {
     player_name: string;
     plate_appearances: number | string;
+  }[];
+  readonly alternate_batters_picks?: readonly {
+    player_name: string;
+    average: number | string;
+    is_disqualified: boolean;
   }[];
 }
 

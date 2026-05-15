@@ -155,6 +155,11 @@ export class LeaderboardService {
               plateAppearances: Number(p.plate_appearances),
             })) ?? []),
           ],
+          alternatePicks: e.alternate_batters_picks?.map((p) => ({
+            playerName: p.player_name,
+            average: Number(p.average),
+            isDisqualified: p.is_disqualified,
+          })),
         }))
       )
     );
@@ -186,6 +191,11 @@ export class LeaderboardService {
               plateAppearances: Number(p.plate_appearances),
             })) ?? []),
           ],
+          alternatePicks: e.alternate_batters_picks?.map((p) => ({
+            playerName: p.player_name,
+            average: Number(p.average),
+            isDisqualified: p.is_disqualified,
+          })),
         }))
       )
     );
