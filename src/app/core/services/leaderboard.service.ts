@@ -264,8 +264,8 @@ export class LeaderboardService {
           isDisqualified: false,
           predictedPlayer: e.predicted_player,
           predictedValue: e.predicted_rbis,
-          isCorrectPlayer: e.predicted_correct_player,
-          actualDifference: e.rbi_difference,
+          pickedPlayerYtdValue: e.picked_player_ytd_rbi,
+          actualDifference: e.deviation,
           alternatesAverage: e.alternates_average,
         }))
       )
@@ -285,8 +285,8 @@ export class LeaderboardService {
           isDisqualified: false,
           predictedPlayer: e.predicted_player,
           predictedValue: e.predicted_stolen_bases,
-          isCorrectPlayer: e.predicted_correct_player,
-          actualDifference: e.sb_difference,
+          pickedPlayerYtdValue: e.picked_player_ytd_sb,
+          actualDifference: e.deviation,
           alternatesAverage: e.alternates_average,
         }))
       )

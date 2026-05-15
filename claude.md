@@ -240,6 +240,14 @@ src/app/
   - Desktop: Separate container to the right of the leaderboard
 - [x] Remove Home button from navbar: Redundant since leaderboard pages have "< Back to Home"
 - [ ] (Nice-to-have) Team theme selector: Allow user to select favorite MLB team, update app color theme based on team colors
+- [ ] Search/filter UX improvements:
+  - Always show button labels (not just on desktop)
+  - Rename "My Players" to "My Picks" for clarity
+  - Consider unified search with autocomplete (shows both users and players with category labels)
+  - Add team names to player filter (requires backend API enhancement)
+  - Alternative: Replace filter buttons with inline toggleable chips
+  - Move Compare button from header to search/filter area
+- [ ] Replace "Back to Home" with browser back navigation or remove altogether
 
 ## TypeScript Models
 

@@ -54,6 +54,9 @@ export class UserProfileComponent {
   private readonly _profileUser = signal<User | null>(null);
   private readonly _categoryData = signal<CategoryWithStanding[]>([]);
   protected readonly expandedCategories = signal<Set<ProfileCategorySlug>>(new Set());
+  // Store max YTD values for prediction categories
+  private readonly _maxRbiYtd = signal<number | null>(null);
+  private readonly _maxSbYtd = signal<number | null>(null);
 
   protected readonly profileUser = this._profileUser.asReadonly();
   protected readonly categoryData = this._categoryData.asReadonly();
@@ -169,6 +172,20 @@ export class UserProfileComponent {
 
     forkJoin(categoryRequests).subscribe({
       next: (results) => {
+        // Compute max YTD values for prediction categories
+        const rbiStandings = results['rbi-champion'];
+        const sbStandings = results['stolen-bases'];
+
+        const rbiYtdValues = rbiStandings
+          .map((s) => s.pickedPlayerYtdValue)
+          .filter((v): v is number => v !== null && v !== undefined);
+        this._maxRbiYtd.set(rbiYtdValues.length > 0 ? Math.max(...rbiYtdValues) : null);
+
+        const sbYtdValues = sbStandings
+          .map((s) => s.pickedPlayerYtdValue)
+          .filter((v): v is number => v !== null && v !== undefined);
+        this._maxSbYtd.set(sbYtdValues.length > 0 ? Math.max(...sbYtdValues) : null);
+
         const categoryData: CategoryWithStanding[] = CATEGORIES.map((cat) => {
           const standings = results[cat.slug];
           const userStanding = standings.find(
@@ -241,5 +258,24 @@ export class UserProfileComponent {
 
   protected getCategory(slug: CategorySlug): Category | undefined {
     return getCategoryBySlug(slug);
+  }
+
+  /**
+   * Check if a standing's picked player is the current leader (has highest YTD value).
+   * Used for prediction categories (RBI Champion, Stolen Bases).
+   */
+  protected pickedLeader(standing: UserStanding | null, categorySlug: ProfileCategorySlug): boolean {
+    if (!standing || standing.pickedPlayerYtdValue === null || standing.pickedPlayerYtdValue === undefined) {
+      return false;
+    }
+    if (categorySlug === 'rbi-champion') {
+      const max = this._maxRbiYtd();
+      return max !== null && standing.pickedPlayerYtdValue === max;
+    }
+    if (categorySlug === 'stolen-bases') {
+      const max = this._maxSbYtd();
+      return max !== null && standing.pickedPlayerYtdValue === max;
+    }
+    return false;
   }
 }

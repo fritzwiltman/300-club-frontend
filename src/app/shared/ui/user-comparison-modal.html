@@ -393,7 +393,7 @@
                       <div class="text-sm text-club-gray mt-1">{{ standingA()!.predictedValue }} RBI</div>
                     }
                     @if (standingA()!.actualDifference !== null && standingA()!.actualDifference !== undefined) {
-                      <div class="text-xs mt-2" [class.text-club-green]="standingA()!.isCorrectPlayer" [class.text-club-gray]="!standingA()!.isCorrectPlayer">
+                      <div class="text-xs mt-2" [class.text-club-green]="pickedLeader(standingA())" [class.text-club-gray]="!pickedLeader(standingA())">
                         {{ formatDifference(standingA()!.actualDifference) }} from actual
                       </div>
                     }
@@ -417,7 +417,7 @@
                       <div class="text-sm text-club-gray mt-1">{{ standingB()!.predictedValue }} RBI</div>
                     }
                     @if (standingB()!.actualDifference !== null && standingB()!.actualDifference !== undefined) {
-                      <div class="text-xs mt-2" [class.text-club-green]="standingB()!.isCorrectPlayer" [class.text-club-gray]="!standingB()!.isCorrectPlayer">
+                      <div class="text-xs mt-2" [class.text-club-green]="pickedLeader(standingB())" [class.text-club-gray]="!pickedLeader(standingB())">
                         {{ formatDifference(standingB()!.actualDifference) }} from actual
                       </div>
                     }
@@ -446,7 +446,7 @@
                       <div class="text-sm text-club-gray mt-1">{{ standingA()!.predictedValue }} SB</div>
                     }
                     @if (standingA()!.actualDifference !== null && standingA()!.actualDifference !== undefined) {
-                      <div class="text-xs mt-2" [class.text-club-green]="standingA()!.isCorrectPlayer" [class.text-club-gray]="!standingA()!.isCorrectPlayer">
+                      <div class="text-xs mt-2" [class.text-club-green]="pickedLeader(standingA())" [class.text-club-gray]="!pickedLeader(standingA())">
                         {{ formatDifference(standingA()!.actualDifference) }} from actual
                       </div>
                     }
@@ -470,7 +470,7 @@
                       <div class="text-sm text-club-gray mt-1">{{ standingB()!.predictedValue }} SB</div>
                     }
                     @if (standingB()!.actualDifference !== null && standingB()!.actualDifference !== undefined) {
-                      <div class="text-xs mt-2" [class.text-club-green]="standingB()!.isCorrectPlayer" [class.text-club-gray]="!standingB()!.isCorrectPlayer">
+                      <div class="text-xs mt-2" [class.text-club-green]="pickedLeader(standingB())" [class.text-club-gray]="!pickedLeader(standingB())">
                         {{ formatDifference(standingB()!.actualDifference) }} from actual
                       </div>
                     }
