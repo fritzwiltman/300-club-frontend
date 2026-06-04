@@ -38,6 +38,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
+env:
+  # Force GitHub Actions to use Node.js 24 instead of deprecated Node.js 20
+  # See: https://github.blog/changelog/2024-05-17-updated-dates-for-actions-runner-using-node20-instead-of-node16-by-default/
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-and-deploy:
     name: Build and Deploy to Lightsail
@@ -57,7 +62,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       # ------------------------------------------------------------------

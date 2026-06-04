@@ -18,7 +18,7 @@ A read-only Angular frontend for 300 Club, a baseball competition leaderboard ap
 | TypeScript | 5.9 | Strict mode enabled |
 | Tailwind CSS | 4.x | Via @tailwindcss/postcss |
 | RxJS | 7.8 | For HTTP, NO NgRx |
-| Node | 20+ | Package manager: npm 11.6.2 |
+| Node | 22+ | Package manager: npm 11.6.2 |
 
 ## Backend API
 
