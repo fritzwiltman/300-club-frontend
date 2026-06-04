@@ -4,13 +4,13 @@ import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import { CategorySlug, getCategoryBySlug, MlbLeader, SavedFilter, User, UserStanding } from '../../core/models';
-import { FilterService, LeaderboardService, UserService } from '../../core/services';
-import { FilterDropdownComponent, LeagueLeadersComponent, LoadingSpinnerComponent, RulesPopoverComponent, UserComparisonModalComponent } from '../../shared/ui';
+import { FilterService, HelpTourService, LeaderboardService, UserService } from '../../core/services';
+import { FilterDropdownComponent, HelpTourComponent, LeagueLeadersComponent, LoadingSpinnerComponent, RulesPopoverComponent, UserComparisonModalComponent } from '../../shared/ui';
 
 @Component({
   selector: 'app-leaderboard',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, ReactiveFormsModule, FilterDropdownComponent, LeagueLeadersComponent, LoadingSpinnerComponent, RulesPopoverComponent, UserComparisonModalComponent],
+  imports: [RouterLink, ReactiveFormsModule, FilterDropdownComponent, HelpTourComponent, LeagueLeadersComponent, LoadingSpinnerComponent, RulesPopoverComponent, UserComparisonModalComponent],
   templateUrl: './leaderboard.html',
 })
 export class LeaderboardComponent {
@@ -18,6 +18,7 @@ export class LeaderboardComponent {
   private readonly leaderboardService = inject(LeaderboardService);
   private readonly userService = inject(UserService);
   private readonly filterService = inject(FilterService);
+  private readonly helpTourService = inject(HelpTourService);
 
   protected readonly isLoading = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -480,5 +481,10 @@ export class LeaderboardComponent {
 
     // Check that ALL selected players are in the user's picks
     return normalizedPlayers.every((player) => userPickNames.includes(player));
+  }
+
+  // Help tour
+  protected startTour(): void {
+    this.helpTourService.startLeaderboardTour();
   }
 }
