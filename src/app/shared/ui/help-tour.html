@@ -1,0 +1,134 @@
+@if (isActive()) {
+  <!-- Backdrop overlay -->
+  <div
+    class="fixed inset-0 z-[998] bg-black/60 transition-opacity"
+    (click)="onClose()"
+    aria-hidden="true"
+  ></div>
+
+  <!-- Spotlight cutout -->
+  @if (spotlightPosition(); as spotlight) {
+    <div
+      class="fixed z-[999] rounded-lg pointer-events-none"
+      [style.top.px]="spotlight.top"
+      [style.left.px]="spotlight.left"
+      [style.width.px]="spotlight.width"
+      [style.height.px]="spotlight.height"
+      style="box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);"
+      aria-hidden="true"
+    >
+      <!-- Animated ring around spotlight -->
+      <div class="absolute inset-0 rounded-lg border-2 border-club-lime animate-pulse"></div>
+    </div>
+  }
+
+  <!-- Tooltip -->
+  @if (currentStep(); as step) {
+    @if (tooltipPosition(); as pos) {
+      <div
+        class="fixed z-[1000] w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl
+               border border-gray-200 dark:border-gray-700"
+        [style.top]="pos.top"
+        [style.left]="pos.left"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-labelledby]="'tour-title-' + step.id"
+      >
+        <!-- Arrow -->
+        <div
+          class="absolute w-3 h-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 transform rotate-45"
+          [class.-top-1.5]="pos.arrowPosition === 'top'"
+          [class.left-1/2]="pos.arrowPosition === 'top' || pos.arrowPosition === 'bottom'"
+          [class.-translate-x-1/2]="pos.arrowPosition === 'top' || pos.arrowPosition === 'bottom'"
+          [class.border-t]="pos.arrowPosition === 'top'"
+          [class.border-l]="pos.arrowPosition === 'top'"
+          [class.-bottom-1.5]="pos.arrowPosition === 'bottom'"
+          [class.border-b]="pos.arrowPosition === 'bottom'"
+          [class.border-r]="pos.arrowPosition === 'bottom'"
+          [class.-left-1.5]="pos.arrowPosition === 'left'"
+          [class.top-1/2]="pos.arrowPosition === 'left' || pos.arrowPosition === 'right'"
+          [class.-translate-y-1/2]="pos.arrowPosition === 'left' || pos.arrowPosition === 'right'"
+          [class.border-t-left]="pos.arrowPosition === 'left'"
+          [class.border-b-left]="pos.arrowPosition === 'left'"
+          [class.-right-1.5]="pos.arrowPosition === 'right'"
+          aria-hidden="true"
+        ></div>
+
+        <!-- Content -->
+        <div class="p-4">
+          <!-- Header with close button -->
+          <div class="flex items-start justify-between mb-2">
+            <h3
+              [id]="'tour-title-' + step.id"
+              class="text-lg font-semibold text-club-forest dark:text-white"
+            >
+              {{ step.title }}
+            </h3>
+            <button
+              type="button"
+              (click)="onClose()"
+              class="p-1 text-club-gray hover:text-club-forest dark:hover:text-white
+                     rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
+              aria-label="Close tour"
+            >
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Description -->
+          <p class="text-sm text-club-gray dark:text-gray-300 mb-4">
+            {{ step.description }}
+          </p>
+
+          <!-- Footer with navigation -->
+          <div class="flex items-center justify-between">
+            <!-- Progress -->
+            <span class="text-xs text-club-gray">
+              {{ stepProgress() }}
+            </span>
+
+            <!-- Navigation buttons -->
+            <div class="flex gap-2">
+              @if (!isFirstStep()) {
+                <button
+                  type="button"
+                  (click)="onPrevious()"
+                  class="px-3 py-1.5 text-sm font-medium text-club-forest dark:text-gray-200
+                         hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md
+                         focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
+                >
+                  Back
+                </button>
+              }
+              @if (isLastStep()) {
+                <button
+                  type="button"
+                  (click)="onComplete()"
+                  class="px-3 py-1.5 text-sm font-medium text-white bg-club-green
+                         hover:bg-club-forest dark:bg-club-sage dark:text-club-forest
+                         dark:hover:bg-club-lime rounded-md
+                         focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
+                >
+                  Got it!
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  (click)="onNext()"
+                  class="px-3 py-1.5 text-sm font-medium text-white bg-club-green
+                         hover:bg-club-forest dark:bg-club-sage dark:text-club-forest
+                         dark:hover:bg-club-lime rounded-md
+                         focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime"
+                >
+                  Next
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  }
+}

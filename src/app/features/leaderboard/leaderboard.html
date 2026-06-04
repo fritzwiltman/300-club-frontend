@@ -88,7 +88,7 @@
           }
 
           <!-- Filter Section -->
-          <div class="mb-4 space-y-3">
+          <div class="mb-4 space-y-3" data-tour="filter-controls">
             <!-- Filter Controls Row -->
             <div class="flex flex-row items-stretch gap-2">
               <!-- User Name Search -->
@@ -116,6 +116,7 @@
               <!-- Filter Dropdown (Player filters + My Picks + Saved filters) -->
               @if (cat.slug !== 'dimaggio') {
                 <app-filter-dropdown
+                  data-tour="filter-button"
                   [category]="cat"
                   [allPlayerNames]="allPlayerNames()"
                   [currentUserPickNames]="currentUserPickNames()"
@@ -132,6 +133,7 @@
 
               <!-- Compare Button -->
               <button type="button" (click)="openComparisonModal()"
+                data-tour="compare-button"
                 class="inline-flex items-center justify-center gap-1.5 px-2 sm:px-3 py-2 text-sm font-medium
                        bg-club-sage/50 text-club-forest border border-club-sage rounded-md
                        hover:bg-club-sage focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime
@@ -141,6 +143,21 @@
                         d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
                 <span class="hidden sm:inline">Compare</span>
+              </button>
+
+              <!-- Help Tour Button -->
+              <button type="button" (click)="startTour()"
+                class="inline-flex items-center justify-center p-2 text-sm font-medium
+                       text-club-gray hover:text-club-forest dark:hover:text-white
+                       hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md
+                       focus:outline-none focus-visible:ring-2 focus-visible:ring-club-lime
+                       flex-shrink-0"
+                title="How to use filters"
+                aria-label="Show filter help tour">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
               </button>
             </div>
 
@@ -635,3 +652,6 @@
         (close)="closeComparisonModal()"
       />
     }
+
+    <!-- Help Tour Overlay -->
+    <app-help-tour />

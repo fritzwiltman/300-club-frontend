@@ -8,3 +8,4 @@ export * from './league-leaders';
 export * from './update-banner';
 export * from './feedback-modal';
 export * from './filter-dropdown';
+export * from './help-tour';
