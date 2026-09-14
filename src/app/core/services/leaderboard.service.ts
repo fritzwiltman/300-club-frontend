@@ -174,7 +174,7 @@ export class LeaderboardService {
           rank: e.rank,
           points: e.aggregate_ops !== null ? Number(e.aggregate_ops) : null,
           isDisqualified: e.rank === 0,
-          alternatesAverage: e.alternate_average !== null ? Number(e.alternate_average) : null,
+          alternatesOps: e.alternate_ops !== null ? Number(e.alternate_ops) : null,
           batterPicks: [
             ...(e.qualified_picks?.map((p) => ({
               playerName: p.player_name,

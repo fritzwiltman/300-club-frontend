@@ -97,7 +97,7 @@ export interface RawBatterEntry {
 export interface RawOpsEntry {
   readonly user_name: string;
   readonly aggregate_ops: number | string | null;
-  readonly alternate_average: number | string | null;
+  readonly alternate_ops: number | string | null;
   readonly rank: number;
   readonly qualified_picks?: readonly {
     player_name: string;
