@@ -67,7 +67,12 @@
                       }
                     </span>
                   </div>
-                  @if (userStanding.alternatesAverage !== null && userStanding.alternatesAverage !== undefined) {
+                  @if (cat.slug === 'ops' && userStanding.alternatesOps !== null && userStanding.alternatesOps !== undefined) {
+                    <div>
+                      <span class="text-club-gray">Alt OPS:</span>
+                      <span class="ml-1 font-mono">{{ formatPct(userStanding.alternatesOps) }}</span>
+                    </div>
+                  } @else if (userStanding.alternatesAverage !== null && userStanding.alternatesAverage !== undefined) {
                     <div>
                       <span class="text-club-gray">Alt AVG:</span>
                       <span class="ml-1 font-mono">{{ formatAverage(userStanding.alternatesAverage) }}</span>
@@ -245,9 +250,9 @@
                       </th>
                     }
                     @case ('ops') {
-                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Alternates Average (Tiebreaker)">
+                      <th scope="col" class="px-2 sm:px-3 py-3 text-right text-xs sm:text-sm font-semibold" title="Alternates OPS (Tiebreaker)">
                         <span class="sm:hidden">Alt</span>
-                        <span class="hidden sm:inline">Alt AVG</span>
+                        <span class="hidden sm:inline">Alt OPS</span>
                       </th>
                     }
                     @case ('homeruns') {
@@ -387,7 +392,7 @@
                       }
                       @case ('ops') {
                         <td class="px-2 sm:px-3 py-3 text-right font-mono text-xs sm:text-sm text-club-gray">
-                          {{ formatAverage(standing.alternatesAverage) }}
+                          {{ formatPct(standing.alternatesOps) }}
                         </td>
                       }
                       @case ('homeruns') {

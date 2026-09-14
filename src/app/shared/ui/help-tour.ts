@@ -75,12 +75,20 @@ export class HelpTourComponent {
       return;
     }
 
+    // Scroll target into view first, then position spotlight
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Wait for scroll to complete before positioning
+    setTimeout(() => this.positionSpotlightAndTooltip(target as HTMLElement, step), 300);
+  }
+
+  private positionSpotlightAndTooltip(target: HTMLElement, step: TourStep): void {
     const rect = target.getBoundingClientRect();
     const padding = 8;
 
-    // Spotlight position
+    // Spotlight position (using viewport coordinates for fixed positioning)
     this.spotlightPosition.set({
-      top: rect.top - padding + window.scrollY,
+      top: rect.top - padding,
       left: rect.left - padding,
       width: rect.width + padding * 2,
       height: rect.height + padding * 2,
@@ -97,22 +105,22 @@ export class HelpTourComponent {
 
     switch (step.position) {
       case 'bottom':
-        top = rect.bottom + gap + window.scrollY;
+        top = rect.bottom + gap;
         left = rect.left + rect.width / 2 - tooltipWidth / 2;
         arrowPosition = 'top';
         break;
       case 'top':
-        top = rect.top - tooltipHeight - gap + window.scrollY;
+        top = rect.top - tooltipHeight - gap;
         left = rect.left + rect.width / 2 - tooltipWidth / 2;
         arrowPosition = 'bottom';
         break;
       case 'left':
-        top = rect.top + rect.height / 2 - tooltipHeight / 2 + window.scrollY;
+        top = rect.top + rect.height / 2 - tooltipHeight / 2;
         left = rect.left - tooltipWidth - gap;
         arrowPosition = 'right';
         break;
       case 'right':
-        top = rect.top + rect.height / 2 - tooltipHeight / 2 + window.scrollY;
+        top = rect.top + rect.height / 2 - tooltipHeight / 2;
         left = rect.right + gap;
         arrowPosition = 'left';
         break;
@@ -120,9 +128,14 @@ export class HelpTourComponent {
 
     // Keep tooltip within viewport
     const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
     if (left < 16) left = 16;
     if (left + tooltipWidth > viewportWidth - 16) {
       left = viewportWidth - tooltipWidth - 16;
+    }
+    if (top < 16) top = 16;
+    if (top + tooltipHeight > viewportHeight - 16) {
+      top = viewportHeight - tooltipHeight - 16;
     }
 
     this.tooltipPosition.set({
@@ -156,11 +169,13 @@ export class HelpTourComponent {
   }
 
   @HostListener('window:resize')
-  @HostListener('window:scroll')
-  onViewportChange(): void {
+  onResize(): void {
     const step = this.currentStep();
     if (this.isActive() && step) {
-      this.updatePositions(step);
+      const target = document.querySelector(step.targetSelector);
+      if (target) {
+        this.positionSpotlightAndTooltip(target as HTMLElement, step);
+      }
     }
   }
 }
